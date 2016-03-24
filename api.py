@@ -1,29 +1,36 @@
 # coding=utf-8
-from flask_peewee.rest import RestAPI, RestResource, Authentication
+from flask import request
+from flask_peewee.rest import RestAPI, RestrictOwnerResource, Authentication, RestResource
 
 from app import app
 from auth import auth
-from models import WXUser, Group, Product, Purchase
+from models import User
 
 
-class TestAuthentication(Authentication):
-    """
-    Always allow operation
-    """
+class IntAuthentication(Authentication):
+    def __init__(self, auth, protected_methods=None):
+        super(IntAuthentication, self).__init__(protected_methods)
+        self.auth = auth
 
     def authorize(self):
-        return True
-
-# 增大每次查询最大项目数
-class BaseResource(RestResource):
-    paginate_by = 100
+        if request.method in self.protected_methods:
+            return False
+        return self.auth.get_logged_in_user()
 
 
-test_auth = TestAuthentication(auth)
+class IntOwnerResource(RestrictOwnerResource):
+    owner_field = 'user'
 
-api = RestAPI(app, prefix='/api/v1', default_auth=test_auth)
+    def validate_owner(self, user, obj):
+        return user.admin or user == getattr(obj, self.owner_field)
 
-api.register(WXUser, provider=BaseResource)
-api.register(Group, provider=BaseResource)
-api.register(Product, provider=BaseResource)
-api.register(Purchase, provider=BaseResource)
+
+class UserResource(RestResource):
+    exclude = ('password',)
+
+
+user_auth = IntAuthentication(auth)
+
+api = RestAPI(app, prefix='/api', default_auth=user_auth)
+
+api.register(User, UserResource)

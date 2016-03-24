@@ -8,15 +8,29 @@ from flask_peewee.utils import make_password
 
 from app import app
 from auth import auth
+from api import api
 from models import QuizBook, User
 
 auth.setup()
+api.setup()
 
 
 @app.route('/')
 @auth.login_required
 def index():
     return render_template('home.html')
+
+
+@app.route('/resetPwd')
+@auth.login_required
+def reset_password():
+    return render_template('reset.html')
+
+
+@app.route('/accounts')
+@auth.admin_required
+def account_list():
+    return render_template('accounts.html')
 
 
 def init_db():
