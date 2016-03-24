@@ -45,7 +45,7 @@ class IntAuth(Auth):
                 self.login_user(authenticated_user)
                 return redirect(next_url)
             else:
-                flash(u'用户名或密码错误', 'warning')
+                flash(u'用户名或密码错误', 'danger')
         else:
             next_url = request.args.get('next')
         return render_template(

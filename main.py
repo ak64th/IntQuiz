@@ -2,7 +2,7 @@
 import logging
 import logging.handlers
 
-from flask import request, render_template, jsonify, make_response, url_for
+from flask import flash, g, request, render_template, jsonify, make_response, url_for
 from peewee import create_model_tables
 from flask_peewee.utils import make_password
 
@@ -21,9 +21,20 @@ def index():
     return render_template('home.html')
 
 
-@app.route('/resetPwd')
+@app.route('/resetPwd', methods=['GET', 'POST'])
 @auth.login_required
 def reset_password():
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm = request.form.get('confirm')
+        if password and len(password) < 6:
+            flash(u'新密码不能少于六位', 'danger')
+        if password and confirm and password == confirm:
+            g.user.set_password(password)
+            g.user.save()
+            flash(u'修改成功', 'success')
+        else:
+            flash(u'新密码与确认密码不一致', 'danger')
     return render_template('reset.html')
 
 
