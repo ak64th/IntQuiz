@@ -13,13 +13,13 @@
 <div class="wrapper">
   {% block header %}
   <header class="main-header">
-    <a href="#/" class="logo">
+    <a href="{{ url_for('index') }}" class="logo">
       <span class="logo-mini">题</span>
       <span class="logo-lg">题库管理系统</span>
     </a>
     <nav role="navigation" class="navbar navbar-static-top">
       <a id="collapseToggle" href="#" role="button" class="sidebar-toggle glyphicon-menu-hamburger">
-        <span class="sr-only">Toggle navigation</span>
+        <span class="sr-only">导航栏按钮</span>
       </a>
     </nav>
   </header>
@@ -28,10 +28,13 @@
   <aside class="main-sidebar">
     <section style="height: auto;" class="sidebar">
       <ul class="sidebar-menu">
-        <li class="treeview"><a href="#"><i class="glyphicon glyphicon-lock"></i><span>帐号管理</span></a>
+        <li class="treeview"><a href="#"><i class="glyphicon glyphicon-lock"></i><span>安全</span></a>
           <ul class="treeview-menu">
-            <li><a href="#resetPwd"><i class="glyphicon glyphicon-edit"></i> 修改密码</a></li>
-            <li><a href="#"><i class="glyphicon glyphicon-list-alt"></i> 帐号管理 </a></li>
+            <li><a href="{{ url_for('reset_password') }}""><i class="glyphicon glyphicon-edit"></i> 修改密码</a></li>
+            {% if user.admin %}
+            <li><a href="{{ url_for('account_list') }}"><i class="glyphicon glyphicon-list-alt"></i> 帐号管理 </a></li>
+            {% endif %}
+            <li><a href="{{ url_for('auth.logout') }}"><i class="glyphicon glyphicon-log-out"></i> 退出 </a></li>
           </ul>
         </li>
       </ul>
@@ -42,6 +45,7 @@
     {% block alert%}
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
+      <div class="flash-header">
         {% for category, message in messages %}
          <div role="alert" class="alert alert-{{ category }} alert-dismissible">{{ message }}
           <button type="button" data-dismiss="alert" aria-label="Close" class="close">
@@ -49,7 +53,8 @@
           </button>
         </div>
         {% endfor %}
-      {% endif %}
+      </div>
+    {% endif %}
     {% endwith %}
     {% endblock alert %}
     {% block content %}
