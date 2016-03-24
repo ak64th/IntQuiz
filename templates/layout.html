@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta charset="utf-8">
+  <title>{% block title %}Title here{% endblock %}</title>
+  <meta name="viewport" content="width=device-width">
+  <link href="/static/css/bootstrap.css" rel="stylesheet" type="text/css">
+  <link href="/static/css/app.css" rel="stylesheet" type="text/css">
+</head>
+{% block body %}
+<body class="skin-blue sidebar-mini">
+<div class="wrapper">
+  {% block header %}
+  <header class="main-header">
+    <a href="#/" class="logo">
+      <span class="logo-mini">题</span>
+      <span class="logo-lg">题库管理系统</span>
+    </a>
+    <nav role="navigation" class="navbar navbar-static-top">
+      <a id="collapseToggle" href="#" role="button" class="sidebar-toggle glyphicon-menu-hamburger">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+    </nav>
+  </header>
+  {% endblock header%}
+  {% block sidebar %}
+  <aside class="main-sidebar">
+    <section style="height: auto;" class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="treeview"><a href="#"><i class="glyphicon glyphicon-lock"></i><span>帐号管理</span></a>
+          <ul class="treeview-menu">
+            <li><a href="#resetPwd"><i class="glyphicon glyphicon-edit"></i> 修改密码</a></li>
+            <li><a href="#"><i class="glyphicon glyphicon-list-alt"></i> 帐号管理 </a></li>
+          </ul>
+        </li>
+      </ul>
+    </section>
+  </aside>
+  {% endblock sidebar %}
+  <div class="content-wrapper">
+    {% block alert%}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+         <div role="alert" class="alert alert-{{ category }} alert-dismissible">{{ message }}
+          <button type="button" data-dismiss="alert" aria-label="Close" class="close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% endblock alert %}
+    {% block content %}
+    <section class="content-header">
+      <h1>登陆</h1>
+    </section>
+    <section class="content">
+      <p>页面内容</p>
+    </section>
+    {% endblock content %}
+  </div>
+  {% block footer %}
+  <footer class="main-footer">
+    <div class="pull-right hidden-xs"><b>Version 1.0.0</b></div>
+    <strong>Copyright © 2015-2016 <a href="http://intfocus.com/">IntFocus </a>All rights reserved.</strong>
+  </footer>
+  {% endblock footer %}
+</div>
+</body>
+{% endblock body %}
+{% block script %}
+<script src="/static/js/jquery.js"></script>
+<script src="/static/js/bootstrap.js"></script>
+<script src="/static/js/underscore.js"></script>
+<script src="/static/js/app.js"></script>
+{% endblock %}
+</html>

@@ -1,0 +1,10 @@
+import os
+
+class Configuration(object):
+    DATABASE = {
+        'name': 'intfocus.db',
+        'engine': 'peewee.SqliteDatabase',
+        'threadlocals': True,
+    }
+    DEBUG = True
+    SECRET_KEY = os.urandom(24).encode('hex')
