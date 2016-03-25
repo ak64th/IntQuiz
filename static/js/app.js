@@ -78,6 +78,14 @@
           return e.preventDefault();
         }
       });
+    },
+    alert: function(message, category){
+      var category = category || 'danger';
+      var template = _.template($('#alert-tpl').html());
+      $('.content-wrapper').prepend(template({
+        message: message,
+        category: category
+      }));
     }
   };
 

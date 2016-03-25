@@ -60,9 +60,10 @@
 
   $(function() {
     app.initUI();
-    users = new Users;
-    usersView = new UsersView({el: $('.table-container'), collection: users});
-    users.fetch();
+    var users = new Users;
+    var usersView = new UsersView({el: $('.table-container'), collection: users});
+    users.fetch()
+     .done(app.alert('载入完成', 'success'));
   });
 </script>
 {% endblock %}

@@ -81,5 +81,12 @@
 <script src="/static/js/underscore.js"></script>
 <script src="/static/js/backbone.js"></script>
 <script src="/static/js/app.js"></script>
+<script id="alert-tpl" type="application/template">
+  <div role="alert" class="alert alert-<%= category %> alert-dismissible"><%= message %>
+    <button type="button" data-dismiss="alert" aria-label="Close" class="close">
+      <span aria-hidden="true">×</span>
+    </button>
+  </div>
+</script>
 {% endblock %}
 </html>
