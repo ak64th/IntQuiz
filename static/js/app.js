@@ -122,4 +122,8 @@
     return true;
   };
 
+  $(function(){
+    app.initUI();
+  });
+
 }).call(this);

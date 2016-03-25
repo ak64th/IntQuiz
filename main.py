@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 import logging.handlers
+import openpyxl
+import os
 
 from flask import flash, g, request, render_template, jsonify, make_response, url_for
 from peewee import create_model_tables
@@ -9,7 +11,8 @@ from flask_peewee.utils import make_password
 from app import app
 from auth import auth
 from api import api
-from models import QuizBook, User
+from models import *
+import excel_tools
 
 auth.setup()
 api.setup()
@@ -44,8 +47,54 @@ def account_list():
     return render_template('accounts.html')
 
 
+@app.route('/quizbooks', methods=['GET', 'POST'])
+@auth.login_required
+def quiz_book_list():
+    if request.method == 'POST':
+        book_name = request.form.get('name')
+        book_file = request.files['file']
+        if not book_name:
+            flash(u'未输入题库名字', 'warning')
+        elif QuizBook.select().where(QuizBook.title == book_name).count():
+            flash(u'题库名字重复', 'danger')
+        elif book_file:
+            handle_sheet_file(book_file)
+        else:
+            flash(u'未选择文件', 'warning')
+    return render_template('books.html')
+
+
+def handle_sheet_file(f):
+    allowed_extensions = ('.xlsx', '.xlsm')
+    ext = os.path.splitext(f.filename)[1]
+    if ext not in allowed_extensions:
+        flash(u'不支持的文件扩展名，只支持{}格式'
+              .format(','.join(allowed_extensions)), 'danger')
+        return
+    wb = openpyxl.load_workbook(f, read_only=True)
+    ws = wb.active
+    if ws.max_row < 2:
+        flash(u'文件不包含题目', 'danger')
+        return
+    rows = ws.iter_rows("A2:I%s" % ws.max_row)
+
+    validated, error_info = excel_tools.validate_rows(rows)
+    missing = error_info.get('missing')
+    duplications = error_info.get('duplications')
+    seen = error_info.get('seen')
+    if missing:
+        flash(u'''第{}行缺少字段，必须有题目内容，类型，正确答案和至少一个选项，'''
+              .format(','.join(map(str, missing))), 'danger')
+    if duplications:
+        for k, v in duplications.items():
+            flash(u'''第{}行与第{}行内容重复。'''
+                  .format(','.join(map(str, v)), seen[k]), 'danger')
+    if not any([missing, duplications]):
+        flash(u"""保存成功""", 'success')
+
+
 def init_db():
-    to_create = User, QuizBook
+    to_create = User, QuizBook, Question
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
     defaults = dict(password=make_password('123456'), admin=True)

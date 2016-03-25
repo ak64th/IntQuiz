@@ -1,3 +1,4 @@
+# coding=utf-8
 import datetime
 from peewee import *
 from flask_peewee.auth import BaseUser
@@ -25,3 +26,24 @@ class User(Base, BaseUser):
 
 class QuizBook(Base):
     title = TextField()
+    user = ForeignKeyField(User, 'books')
+
+
+class Question(Base):
+    SINGLE = 1
+    MULTI = 2
+    TYPE_CHOICE = (
+        (SINGLE, u'单选'),
+        (MULTI, u'多选'),
+    )
+
+    content = TextField()
+    type = IntegerField(choices=TYPE_CHOICE)
+    option_A = TextField(null=True)
+    option_B = TextField(null=True)
+    option_C = TextField(null=True)
+    option_D = TextField(null=True)
+    option_E = TextField(null=True)
+    option_F = TextField(null=True)
+    book = ForeignKeyField(QuizBook)
+

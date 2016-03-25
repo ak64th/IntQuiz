@@ -580,6 +580,151 @@ a:focus {
   right: 10px;
   margin-top: -7px;
 }
+.btn {
+  border-radius: 3px;
+  box-shadow: none;
+  border: 1px solid transparent;
+}
+.btn.uppercase {
+  text-transform: uppercase;
+}
+.btn.btn-flat {
+  border-radius: 0;
+  box-shadow: none;
+  border-width: 1px;
+}
+.btn:active {
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
+}
+.btn:focus {
+  outline: none;
+}
+.btn.btn-file {
+  position: relative;
+  overflow: hidden;
+}
+.btn.btn-file > input[type='file'] {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 100%;
+  min-height: 100%;
+  font-size: 100px;
+  text-align: right;
+  opacity: 0;
+  filter: alpha(opacity=0);
+  outline: none;
+  background: #fff;
+  cursor: inherit;
+  display: block;
+}
+.btn-default {
+  background-color: #f4f4f4;
+  color: #444;
+  border-color: #ddd;
+}
+.btn-default:hover,
+.btn-default:active,
+.btn-default.hover {
+  background-color: #e8e8e8;
+}
+.btn-primary {
+  background-color: #3c8dbc;
+  border-color: #3986b3;
+}
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary.hover {
+  background-color: #3986b3;
+}
+.btn-success {
+  background-color: #008000;
+  border-color: #007a00;
+}
+.btn-success:hover,
+.btn-success:active,
+.btn-success.hover {
+  background-color: #007a00;
+}
+.btn-info {
+  background-color: #0ff;
+  border-color: #00f2f2;
+}
+.btn-info:hover,
+.btn-info:active,
+.btn-info.hover {
+  background-color: #00f2f2;
+}
+.btn-danger {
+  background-color: #f00;
+  border-color: #f20000;
+}
+.btn-danger:hover,
+.btn-danger:active,
+.btn-danger.hover {
+  background-color: #f20000;
+}
+.btn-warning {
+  background-color: #ff0;
+  border-color: #f2f200;
+}
+.btn-warning:hover,
+.btn-warning:active,
+.btn-warning.hover {
+  background-color: #f2f200;
+}
+.btn-outline {
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+}
+.btn-outline:hover,
+.btn-outline:focus,
+.btn-outline:active {
+  color: rgba(255,255,255,0.7);
+  border-color: rgba(255,255,255,0.7);
+}
+.btn-link {
+  box-shadow: none;
+}
+.btn[class*='bg-']:hover {
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.2);
+}
+.btn-app {
+  border-radius: 3px;
+  position: relative;
+  padding: 15px 5px;
+  margin: 0 0 10px 10px;
+  min-width: 80px;
+  height: 60px;
+  text-align: center;
+  color: #666;
+  border: 1px solid #ddd;
+  background-color: #f4f4f4;
+  font-size: 12px;
+}
+.btn-app > .fa,
+.btn-app > .glyphicon,
+.btn-app > .ion {
+  font-size: 20px;
+  display: block;
+}
+.btn-app:hover {
+  background: #f4f4f4;
+  color: #444;
+  border-color: #aaa;
+}
+.btn-app:active,
+.btn-app:focus {
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);
+}
+.btn-app > .badge {
+  position: absolute;
+  top: -3px;
+  right: -10px;
+  font-size: 10px;
+  font-weight: 400;
+}
 .skin-blue .main-header .navbar {
   background-color: #3c8dbc;
 }
