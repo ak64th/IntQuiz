@@ -4,7 +4,7 @@ from flask_peewee.rest import RestAPI, RestrictOwnerResource, Authentication, Re
 
 from app import app
 from auth import auth
-from models import User
+from models import *
 
 
 class IntAuthentication(Authentication):
@@ -51,12 +51,15 @@ class IntOwnerResource(IntRestResource, RestrictOwnerResource):
     def validate_owner(self, user, obj):
         return user.admin or user == getattr(obj, self.owner_field)
 
+
+class IntOnlyViewByOwnerResource(IntOwnerResource):
     def restrict_get_query(self, user, query):
         if not user.admin:
             query.where(getattr(self.model, self.owner_field) == g.user)
+        return query
 
-    def get_query(self):
-        query = super(IntOwnerResource, self).get_query()
+    def process_query(self, query):
+        query = super(IntOwnerResource, self).process_query(query)
         return self.restrict_get_query(g.user, query)
 
 
@@ -64,8 +67,14 @@ class UserResource(IntRestResource):
     exclude = ('password',)
 
 
+class QuestionResource(IntRestResource):
+    paginate_by = 10
+
+
 user_auth = IntAuthentication(auth)
 
 api = RestAPI(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
 
 api.register(User, UserResource)
+api.register(QuizBook, IntOwnerResource)
+api.register(Question, QuestionResource)

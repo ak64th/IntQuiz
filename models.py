@@ -4,16 +4,7 @@ from peewee import *
 from flask_peewee.auth import BaseUser
 from app import db
 
-
-class IntListField(TextField):
-    sep = u','
-
-    def db_value(self, value):
-        return self.sep.join(map(self.coerce, value))
-
-    def python_value(self, value):
-        value = self.coerce(value).split(self.sep)
-        return value and map(int, value) or None
+__all__ = ['User', 'QuizBook', 'Question']
 
 
 class Base(db.Model):
@@ -53,12 +44,12 @@ class Question(Base):
 
     content = TextField()
     type = IntegerField(choices=TYPE_CHOICE)
-    correct_option = IntListField()
+    correct_option = TextField()
     option_A = TextField(null=True)
     option_B = TextField(null=True)
     option_C = TextField(null=True)
     option_D = TextField(null=True)
     option_E = TextField(null=True)
     option_F = TextField(null=True)
-    book = ForeignKeyField(QuizBook, on_delete='CASCADE')
+    book = ForeignKeyField(QuizBook, related_name='questions', on_delete='CASCADE')
 

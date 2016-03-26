@@ -11,7 +11,7 @@ from flask_peewee.utils import make_password
 from app import app, db
 from auth import auth
 from api import api
-from models import User, QuizBook, Question
+from models import *
 import excel_tools
 
 auth.setup()

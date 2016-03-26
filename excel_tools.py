@@ -70,7 +70,7 @@ def validate_rows(rows):
                       'option_C', 'option_D', 'option_E', 'option_F')
         row_values = map(get_value, row)
         row_values[1] = type_mapping[row_values[1]]
-        row_values[2] = [str(ord(c.upper()) - 64) for c in row_values[2]]
+        row_values[2] = u','.join([str(ord(c.upper()) - 64) for c in row_values[2]])
         return dict(zip(row_fields, row_values))
 
     for i, row in enumerate(rows, start=2):
