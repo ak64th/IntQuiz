@@ -8,10 +8,10 @@ from flask import flash, g, request, render_template, jsonify, make_response, ur
 from peewee import create_model_tables
 from flask_peewee.utils import make_password
 
-from app import app
+from app import app, db
 from auth import auth
 from api import api
-from models import *
+from models import User, QuizBook, Question
 import excel_tools
 
 auth.setup()
@@ -58,13 +58,13 @@ def quiz_book_list():
         elif QuizBook.select().where(QuizBook.title == book_name).count():
             flash(u'题库名字重复', 'danger')
         elif book_file:
-            handle_sheet_file(book_file)
+            handle_sheet_file(book_name, book_file)
         else:
             flash(u'未选择文件', 'warning')
     return render_template('books.html')
 
 
-def handle_sheet_file(f):
+def handle_sheet_file(title, f):
     allowed_extensions = ('.xlsx', '.xlsm')
     ext = os.path.splitext(f.filename)[1]
     if ext not in allowed_extensions:
@@ -82,6 +82,8 @@ def handle_sheet_file(f):
     missing = error_info.get('missing')
     duplications = error_info.get('duplications')
     seen = error_info.get('seen')
+    invalid_type = error_info['invalid_type']
+    invalid_correct_option = error_info['invalid_correct_option']
     if missing:
         flash(u'''第{}行缺少字段，必须有题目内容，类型，正确答案和至少一个选项，'''
               .format(','.join(map(str, missing))), 'danger')
@@ -89,16 +91,32 @@ def handle_sheet_file(f):
         for k, v in duplications.items():
             flash(u'''第{}行与第{}行内容重复。'''
                   .format(','.join(map(str, v)), seen[k]), 'danger')
-    if not any([missing, duplications]):
-        flash(u"""保存成功""", 'success')
+    if invalid_type:
+        flash(u'''第{}行题目类型错误，必须是“单选”或“多选”，'''
+              .format(','.join(map(str, invalid_type))), 'danger')
+    if invalid_correct_option:
+        flash(u'''
+        第{}行正确答案长度和题目类型不符，或是对应答案单元格内容为空。
+        注意是不是输入答案时填在下一个单元格了。
+        '''.format(','.join(map(str, invalid_correct_option))), 'danger')
+    if not any((missing, duplications, invalid_type, invalid_correct_option)):
+        database = db.database
+        with database.atomic():
+            book = QuizBook.create(title=title, user=g.user)
+            for row in validated:
+                row['book'] = book.id
+            Question.insert_many(validated).execute()
+        count = Question.select().where(Question.book == book).count()
+        flash(u"""保存成功，目前该题库共有{}题""".format(count), 'success')
 
 
 def init_db():
     to_create = User, QuizBook, Question
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
-    defaults = dict(password=make_password('123456'), admin=True)
-    User.get_or_create(username='admin', defaults=defaults)
+    defaults = dict(password=make_password('123456'))
+    User.get_or_create(username='admin', admin=True, defaults=defaults)
+    User.get_or_create(username=u'王禄', admin=False, defaults=defaults)
 
 
 if __name__ == '__main__':

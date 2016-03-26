@@ -1,5 +1,5 @@
 # coding=utf-8
-from flask import request, url_for
+from flask import request, url_for, g
 from flask_peewee.rest import RestAPI, RestrictOwnerResource, Authentication, RestResource
 
 from app import app
@@ -19,6 +19,8 @@ class IntAuthentication(Authentication):
 
 
 class IntRestResource(RestResource):
+    paginate_by = None
+
     def get_request_metadata(self, paginated_query):
         var = paginated_query.page_var
         request_arguments = request.args.copy()
@@ -48,6 +50,14 @@ class IntOwnerResource(IntRestResource, RestrictOwnerResource):
 
     def validate_owner(self, user, obj):
         return user.admin or user == getattr(obj, self.owner_field)
+
+    def restrict_get_query(self, user, query):
+        if not user.admin:
+            query.where(getattr(self.model, self.owner_field) == g.user)
+
+    def get_query(self):
+        query = super(IntOwnerResource, self).get_query()
+        return self.restrict_get_query(g.user, query)
 
 
 class UserResource(IntRestResource):
