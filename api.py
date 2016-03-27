@@ -19,6 +19,7 @@ class IntAuthentication(Authentication):
 
 
 class IntRestResource(RestResource):
+    paginate_by = 10
     def get_request_metadata(self, paginated_query):
         var = paginated_query.page_var
         request_arguments = request.args.copy()

@@ -40,9 +40,7 @@
   <% } else { %>
   <td><%= "多选" %></td>
   <% } %>
-  <td>
-  <% print('ok') %>
-  </td>
+  <td><%= correct_option %></td>
   <td><%= option_A %></td>
   <td><%= option_B %></td>
   <td><%= option_C %></td>
@@ -50,8 +48,39 @@
   <td><%= option_E %></td>
   <td><%= option_F %></td>
   <td>
-    <a href="" class="btn btn-primary btn-xs">编辑</a>
+    <a href="#" class="btn btn-primary btn-xs">编辑</a>
   </td>
+</script>
+<script type="application/template" id="page-nav-tpl">
+  <ul class="pagination">
+    <% start = Math.max(1, page - 5) %>
+    <% end = Math.min(pages, page + 5) %>
+    <% if(page == start){ %>
+    <li class="disabled">
+    <% } else { %>
+    <li>
+    <% } %>
+      <a href="#" aria-label="Previous" data-id="<%= 1 %>">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <% for(i=start;i < page;i++) { %>
+    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
+    <% } %>
+    <li class="active" data-id="<%= page %>"><a href="#"><%= page %></a></li>
+    <% for(i=page+1;i <= end;i++) { %>
+    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
+    <% } %>
+    <% if(page == end){ %>
+    <li class="disabled">
+    <% } else { %>
+    <li>
+    <% } %>
+      <a href="#" aria-label="Next" data-id="<%= pages %>">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
 </script>
 <script>
   var bookId = {{ book_id }};
@@ -68,7 +97,7 @@
   } );
 
   var Questions = app.Collection.extend({
-    url: '/api/v1/question',
+    url: '/api/v1/question/',
     model: Question,
     state: {'book': bookId},
     setState: function(){
@@ -89,19 +118,77 @@
     tagName: 'tr',
     template: _.template($('#question-row-tpl').html()),
     render: function(){
-      this.$el.html(this.template(
-        this.model.toJSON()
-      ));
+      var data = this.model.toJSON()
+      data.correct_option = convertOptionCode(data.correct_option)
+      this.$el.html(this.template(data));
+      return this;
+    }
+  });
+
+  var convertOptionCode = function(s){
+    codes = _.map(s.split(','), function(i){
+      return String.fromCharCode(64 + parseInt(i))
+    });
+    return codes.join(',')
+  };
+
+  var PaginationView = Backbone.View.extend({
+    tagName: 'nav',
+    className: 'pull-right page-nav',
+    template: _.template($('#page-nav-tpl').html()),
+    events: {
+      'click a[data-id]': 'loadPage'
+    },
+    initialize: function(){
+      this.listenTo(this.collection, 'reset', this.render);
+    },
+    render: function(){
+      console.log(this.collection.meta);
+      if(this.collection.meta){
+        this.$el.html(this.template(
+          this.collection.meta
+        ));
+      }
+      return this;
+    },
+    loadPage: function(e){
+      e.preventDefault();
+      var data = $(e.currentTarget).data();
+      this.collection.fetch({data:{page: data.id}, reset: true})
+    }
+  });
+
+  var QuestionsView = Backbone.View.extend({
+    initialize: function(options){
+      this.pageNavView = new PaginationView({collection: this.collection});
+      this.$el.after(this.pageNavView.render().$el);
+      this.listenTo(this.collection, 'add', this.add);
+      this.listenTo(this.collection, 'reset', this.render);
+    },
+    _row: function(model){
+      return new QuestionView({model: model});
+    },
+    add: function(model){
+      var row = this._row(model);
+      row.$el.addClass("success");
+      this.$('table tbody').prepend(row.render().$el);
+    },
+    render: function(collection){
+      var $tbody = this.$('table tbody');
+      $tbody.html('');
+      collection.each(function(model){
+        var row = this._row(model);
+        $tbody.append(row.render().$el);
+      }, this);
       return this;
     }
   });
 
   $(function() {
     var questions = new Questions;
-      var questionsView = new app.TableView({
+    var questionsView = new QuestionsView({
       el: $('#question-table-container'),
-      collection: questions,
-      RowView: QuestionView
+      collection: questions
     });
     questions.fetch({reset: true});
   });
