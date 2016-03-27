@@ -110,6 +110,30 @@
         }
         return data && data.objects || data;
       }
+    }),
+    TableView: Backbone.View.extend({
+      initialize: function(options){
+        this.RowView = options.RowView;
+        this.listenTo(this.collection, 'add', this.add);
+        this.listenTo(this.collection, 'reset', this.render);
+      },
+      _row: function(model){
+        return new this.RowView({model: model});
+      },
+      add: function(model){
+        var row = this._row(model);
+        row.$el.addClass("success");
+        this.$('table tbody').prepend(row.render().$el);
+      },
+      render: function(collection){
+        var $tbody = this.$('table tbody');
+        $tbody.html('');
+        collection.each(function(model){
+          var row = this._row(model);
+          $tbody.append(row.render().$el);
+        }, this);
+        return this;
+      }
     })
   };
 

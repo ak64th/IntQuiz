@@ -31,7 +31,7 @@
       <ul class="sidebar-menu">
         <li class="treeview"><a href="#"><i class="glyphicon glyphicon-lock"></i><span>安全</span></a>
           <ul class="treeview-menu">
-            <li><a href="{{ url_for('reset_password') }}""><i class="glyphicon glyphicon-edit"></i> 修改密码</a></li>
+            <li><a href="{{ url_for('reset_password') }}"><i class="glyphicon glyphicon-edit"></i> 修改密码</a></li>
             {% if user.admin %}
             <li><a href="{{ url_for('account_list') }}"><i class="glyphicon glyphicon-list-alt"></i> 帐号管理 </a></li>
             {% endif %}

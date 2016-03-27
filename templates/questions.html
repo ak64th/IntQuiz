@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header">
+  <h1>题库内容</h1>
+</section>
+<section class="content">
+  <div class="row">
+    <div class="table-responsive table-scrollable col-xs-12" id="question-table-container">
+      <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+          <td>题目</td>
+          <td>类型</td>
+          <td>正解</td>
+          <td>选项A</td>
+          <td>选项B</td>
+          <td>选项C</td>
+          <td>选项D</td>
+          <td>选项E</td>
+          <td>选项F</td>
+          <td>操作</td>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script type="application/template" id="question-row-tpl">
+  <td><%= content %></td>
+  <% if(type == 1){ %>
+  <td><%= "单选" %></td>
+  <% } else { %>
+  <td><%= "多选" %></td>
+  <% } %>
+  <td>
+  <% print('ok') %>
+  </td>
+  <td><%= option_A %></td>
+  <td><%= option_B %></td>
+  <td><%= option_C %></td>
+  <td><%= option_D %></td>
+  <td><%= option_E %></td>
+  <td><%= option_F %></td>
+  <td>
+    <a href="" class="btn btn-primary btn-xs">编辑</a>
+  </td>
+</script>
+<script>
+  var bookId = {{ book_id }};
+
+  var Question = app.Model.extend({
+    defaults: {
+      "option_A": "",
+      "option_B": "",
+      "option_C": "",
+      "option_D": "",
+      "option_E": "",
+      "option_F": ""
+    }
+  } );
+
+  var Questions = app.Collection.extend({
+    url: '/api/v1/question',
+    model: Question,
+    state: {'book': bookId},
+    setState: function(){
+      var meta = this.meta || {};
+      _.extend(this.state, _.pick(meta, 'page'));
+    },
+    fetch: function(options){
+      var options = options || {};
+      var data = options.data || {}
+      options.data = _.extend(this.state, data);
+      app.Collection.prototype.fetch.call(this, options).done(
+        _.bind(this.setState, this)
+      );
+    }
+  });
+
+  var QuestionView = Backbone.View.extend({
+    tagName: 'tr',
+    template: _.template($('#question-row-tpl').html()),
+    render: function(){
+      this.$el.html(this.template(
+        this.model.toJSON()
+      ));
+      return this;
+    }
+  });
+
+  $(function() {
+    var questions = new Questions;
+      var questionsView = new app.TableView({
+      el: $('#question-table-container'),
+      collection: questions,
+      RowView: QuestionView
+    });
+    questions.fetch({reset: true});
+  });
+</script>
+{% endblock %}

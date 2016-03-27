@@ -21,12 +21,12 @@
     </form>
   </div>
   <div class="row">
-    <div class="table-container col-xs-12">
+    <div class="table-responsive col-xs-12" id="quizbook-table-container">
       <table class="table table-bordered table-hover table-striped">
         <thead>
         <tr>
           <td>名称</td>
-          <td>创建者</td>
+          <td>拥有者</td>
           <td>操作</td>
         </tr>
         </thead>
@@ -41,12 +41,38 @@
 
 {% block script %}
 {{ super() }}
-<script type="application/template" id="user-row-tpl">
+<script type="application/template" id="quiz-book-row-tpl">
   <td><%= title %></td>
-  <td><%= user %></td>
-  <td><a href="" class="btn btn-default btn-xs">编辑</a></td>
+  <td><%= user.username %></td>
+  <td>
+    <a href="/quizbooks/<%= id %>/questions" class="btn btn-default btn-xs">查看</a>
+    <a href="" class="btn btn-primary btn-xs">编辑</a>
+  </td>
 </script>
-
 <script>
+  var QuizBooks = app.Collection.extend({
+    url: '/api/v1/quizbook'
+  });
+
+  var QuizBookView = Backbone.View.extend({
+    tagName: 'tr',
+    template: _.template($('#quiz-book-row-tpl').html()),
+    render: function(){
+      this.$el.html(this.template(
+        this.model.toJSON()
+      ));
+      return this;
+    }
+  });
+
+  $(function() {
+    var quizBooks = new QuizBooks;
+    var quizBooksView = new app.TableView({
+      el: $('#quizbook-table-container'),
+      collection: quizBooks,
+      RowView: QuizBookView
+    });
+    quizBooks.fetch({reset: true});
+  });
 </script>
 {% endblock %}

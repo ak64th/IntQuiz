@@ -19,8 +19,6 @@ class IntAuthentication(Authentication):
 
 
 class IntRestResource(RestResource):
-    paginate_by = None
-
     def get_request_metadata(self, paginated_query):
         var = paginated_query.page_var
         request_arguments = request.args.copy()
@@ -67,8 +65,12 @@ class UserResource(IntRestResource):
     exclude = ('password',)
 
 
+class QuizBookResource(IntOwnerResource):
+    include_resources = {'user': UserResource}
+
+
 class QuestionResource(IntRestResource):
-    paginate_by = 10
+    pass
 
 
 user_auth = IntAuthentication(auth)
@@ -76,5 +78,5 @@ user_auth = IntAuthentication(auth)
 api = RestAPI(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
 
 api.register(User, UserResource)
-api.register(QuizBook, IntOwnerResource)
+api.register(QuizBook, QuizBookResource)
 api.register(Question, QuestionResource)

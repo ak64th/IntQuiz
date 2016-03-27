@@ -110,6 +110,12 @@ def handle_sheet_file(title, f):
         flash(u"""保存成功，目前该题库共有{}题""".format(count), 'success')
 
 
+@app.route('/quizbooks/<book_id>/questions')
+@auth.login_required
+def question_list(book_id):
+    return render_template('questions.html', book_id=book_id)
+
+
 def init_db():
     to_create = User, QuizBook, Question
     create_model_tables(models=to_create, fail_silently=True)
