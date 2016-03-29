@@ -60,7 +60,7 @@
     <% } else { %>
     <li>
     <% } %>
-      <a href="#" aria-label="Previous" data-id="<%= 1 %>">
+      <a href="#" aria-label="Start" data-id="<%= 1 %>">
         <span aria-hidden="true">&laquo;</span>
       </a>
     </li>
@@ -76,7 +76,7 @@
     <% } else { %>
     <li>
     <% } %>
-      <a href="#" aria-label="Next" data-id="<%= pages %>">
+      <a href="#" aria-label="End" data-id="<%= pages %>">
         <span aria-hidden="true">&raquo;</span>
       </a>
     </li>
@@ -134,7 +134,7 @@
 
   var PaginationView = Backbone.View.extend({
     tagName: 'nav',
-    className: 'pull-right page-nav',
+    className: 'page-nav',
     template: _.template($('#page-nav-tpl').html()),
     events: {
       'click a[data-id]': 'loadPage'
