@@ -1,12 +1,15 @@
 # coding=utf-8
 import logging
 import logging.handlers
+import datetime
+import functools
+import itertools
 import openpyxl
 import os
 
-from flask import flash, g, request, render_template, jsonify, make_response, url_for
+from flask import flash, g, redirect, request, render_template, jsonify, make_response, url_for
 from peewee import create_model_tables
-from flask_peewee.utils import make_password
+from flask_peewee.utils import make_password, get_object_or_404
 
 from app import app, db
 from auth import auth
@@ -41,9 +44,24 @@ def reset_password():
     return render_template('reset.html')
 
 
-@app.route('/accounts')
+@app.route('/accounts', methods=['GET', 'POST'])
 @auth.admin_required
 def account_list():
+    if request.method == 'POST':
+        uid = request.form.get('uid')
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if not (username and password):
+            flash(u'缺少字段', 'danger')
+        else:
+            if uid:
+                user = get_object_or_404(User, (User.id == uid))
+            else:
+                user = User()
+            user.username = username
+            user.set_password(password)
+            if user.save():
+                flash(u'操作成功', 'success')
     return render_template('accounts.html')
 
 
@@ -116,8 +134,91 @@ def question_list(book_id):
     return render_template('questions.html', book_id=book_id)
 
 
+# noinspection PyUnboundLocalVariable
+@app.route('/activities/add/', defaults={'pk': None}, endpoint='add_activity', methods=['GET', 'POST'])
+@app.route('/activities/edit/<int:pk>/', endpoint='edit_activity', methods=['GET', 'POST'])
+@auth.login_required
+def activity_detail(pk):
+    if pk:
+        activity = get_object_or_404(Activity, (Activity.id == pk))
+    else:
+        activity = Activity(type=0, book=QuizBook.get(), start_at=datetime.datetime.now(), show_answer=True)
+    if request.method == 'POST':
+        app.logger.debug(request.form)
+        name = request.form.get('name')
+        welcome = request.form.get('welcome')
+        type = request.form.get('type', type=int)
+        book = request.form.get('book', type=int)
+        chances = request.form.get('chances', 0, type=int)
+        time_limit = request.form.get('time_limit', 0, type=int)
+        single = request.form.get('single', 0, type=int)
+        multi = request.form.get('multi', 0, type=int)
+        single_points = request.form.get('single_points', 0, type=int)
+        multi_points = request.form.get('multi_points', 0, type=int)
+        show_answer = request.form.get('show_answer', type=bool)
+        datetimerange = request.form.get('datetimerange')
+        info_field_1 = request.form.get('info_field_1')
+        info_field_2 = request.form.get('info_field_2')
+        info_field_3 = request.form.get('info_field_3')
+
+        valid = True
+        if not all((name, book, chances, datetimerange)):
+            flash(u'字段缺失', 'danger')
+            valid = False
+        if chances and chances < 1:
+            flash(u'答题次数不能小于1', 'danger')
+            valid = False
+        if type == Activity.ORDINARY and single + multi < 1:
+            flash(u'普通模式下，题目总数不能小于1', 'danger')
+            valid = False
+        if any(map(lambda x: x < 0, [time_limit, single, multi, single_points, multi_points])):
+            flash(u'时间限制，题目数量和分值不能为负', 'danger')
+            valid = False
+        if single_points + multi_points < 1:
+            flash(u'单选和多选分值不能同时为0', 'danger')
+            valid = False
+
+        def datetime_format(date_string):
+            return datetime.datetime.strptime(date_string, u'%Y-%m-%d %H:%M:%S')
+
+        if datetimerange:
+            try:
+                start_at, end_at = map(datetime_format, datetimerange.split(' - '))
+            except ValueError:
+                flash(u'日期时间字符串格式错误', 'danger')
+                valid = False
+
+        # 把非空白的字段放到数组最前，然后接上None
+        info_fields = list(filter(lambda x: x.strip() if x else x,
+                                  (info_field_1, info_field_2, info_field_3))) + [None] * 3
+
+        if valid:
+            activity.name = name
+            activity.welcome = welcome
+            activity.type = type
+            activity.book = book
+            activity.chances = chances
+            activity.time_limit = time_limit
+            activity.single = single
+            activity.multi = multi
+            activity.single_points = single_points
+            activity.multi_points = multi_points
+            activity.show_answer = show_answer
+            activity.start_at = start_at
+            activity.end_at = end_at
+            activity.info_field_1 = info_fields[0]
+            activity.info_field_2 = info_fields[1]
+            activity.info_field_3 = info_fields[2]
+            activity.user = g.user
+            if activity.save():
+                flash(u'保存成功', 'success')
+                # return redirect()
+    books = QuizBook.select()
+    return render_template('activity.html', activity=activity, books=books)
+
+
 def init_db():
-    to_create = User, QuizBook, Question
+    to_create = User, QuizBook, Question, Activity
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
     defaults = dict(password=make_password('123456'))
@@ -126,11 +227,11 @@ def init_db():
 
 
 if __name__ == '__main__':
-    logger = logging.getLogger('peewee')
-    logger.setLevel(logging.DEBUG)
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    logger.addHandler(stream_handler)
+    # logger = logging.getLogger('peewee')
+    # logger.setLevel(logging.DEBUG)
+    # stream_handler = logging.StreamHandler()
+    # stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    # logger.addHandler(stream_handler)
 
     init_db()
     app.run(host='0.0.0.0', debug=True, threaded=True)
