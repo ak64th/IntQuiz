@@ -8,3 +8,4 @@ class Configuration(object):
     }
     DEBUG = True
     SECRET_KEY = os.urandom(24).encode('hex')
+    FRONT_HOST = 'onetoend.com'
