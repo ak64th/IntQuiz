@@ -1,0 +1,180 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<section class="content-header">
+  <h1>活动管理</h1>
+</section>
+<section class="content">
+  <div class="row">
+    <div class="table-container col-xs-12" id="activity-table-container">
+      <table class="table table-bordered table-hover table-striped">
+        <thead>
+        <tr>
+          <th>活动ID</th>
+          <th>活动名称</th>
+          <th>题库</th>
+          <th>答题模式</th>
+          <th>答题机会（次）</th>
+          <th>答题时间（秒）</th>
+          <th>单选题数量（题）</th>
+          <th>多选题数量（题）</th>
+          <th>单选题分值（分）</th>
+          <th>多选题分值（分）</th>
+          <th>开启状态</th>
+          <th>开启时间</th>
+          <th>关闭时间</th>
+          <th>介绍</th>
+          <td>个人信息字段1</td>
+          <td>个人信息字段2</td>
+          <td>个人信息字段3</td>
+          <th>访问地址</th>
+          <th>操作</th>
+          <th>创建者</th>
+        </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script type="application/template" id="activity-row-tpl">
+  <td><%= id %></td>
+  <td><%= name %></td>
+  <td><%= book.title %></td>
+  <td><%= type %></td>
+  <td><%= chances %></td>
+  <td><%= time_limit %></td>
+  <td><%= single %></td>
+  <td><%= multi %></td>
+  <td><%= single_points %></td>
+  <td><%= multi_points %></td>
+  <td><%= status %></td>
+  <td><%= start_at %></td>
+  <td><%= end_at %></td>
+  <td><%= welcome %></td>
+  <td><%= info_field_1 %></td>
+  <td><%= info_field_2 %></td>
+  <td><%= info_field_3 %></td>
+  <td><%= code %></td>
+  <td><a href="/activities/edit/<%= id %>" class="btn btn-primary btn-xs">编辑</a></td>
+  <td><%= user.username %></td>
+</script>
+<script type="application/template" id="page-nav-tpl">
+  <ul class="pagination">
+    <% start = Math.max(1, page - 5) %>
+    <% end = Math.min(pages, page + 5) %>
+    <% if(page == start){ %>
+    <li class="disabled">
+      <% } else { %>
+    <li>
+      <% } %>
+      <a href="#" aria-label="Start" data-id="<%= 1 %>">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    <% for(i=start;i < page;i++) { %>
+    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
+    <% } %>
+    <li class="active" data-id="<%= page %>"><a href="#"><%= page %></a></li>
+    <% for(i=page+1;i <= end;i++) { %>
+    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
+    <% } %>
+    <% if(page == end){ %>
+    <li class="disabled">
+      <% } else { %>
+    <li>
+      <% } %>
+      <a href="#" aria-label="End" data-id="<%= pages %>">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</script>
+<script>
+  var front_host = "{{ front_host }}";
+
+  var Activity = app.Model.extend({
+    defaults: {
+      "info_field_1": "",
+      "info_field_2": "",
+      "info_field_3": "",
+    }
+  });
+
+  var Activities = app.Collection.extend({
+    url: '/api/v1/activity/',
+    model: Activity,
+    state: {},
+    setState: function(){
+      var meta = this.meta || {};
+      _.extend(this.state, _.pick(meta, 'page'));
+    },
+    fetch: function(options){
+      var options = options || {};
+      var data = options.data || {}
+      options.data = _.extend(this.state, data);
+      app.Collection.prototype.fetch.call(this, options).done(
+        _.bind(this.setState, this)
+      );
+    }
+  });
+
+  var PaginationView = Backbone.View.extend({
+    tagName: 'nav',
+    className: 'page-nav',
+    template: _.template($('#page-nav-tpl').html()),
+    events: {
+      'click a[data-id]': 'loadPage'
+    },
+    initialize: function(){
+      this.listenTo(this.collection, 'reset', this.render);
+    },
+    render: function(){
+      if(this.collection.meta){
+        this.$el.html(this.template(
+          this.collection.meta
+        ));
+      }
+      return this;
+    },
+    loadPage: function(e){
+      e.preventDefault();
+      var data = $(e.currentTarget).data();
+      this.collection.fetch({data:{page: data.id}, reset: true})
+    }
+  });
+
+
+  var ActivityView = Backbone.View.extend({
+    tagName: 'tr',
+    template: _.template($('#activity-row-tpl').html()),
+    render: function(){
+      var data = this.model.toJSON();
+      var now = moment();
+      var start = moment(data['start_at']);
+      var end = moment(data['end_at']);
+      data['status'] = (start < now < end)  && '开启' || '关闭';
+      this.$el.html(this.template(data));
+      return this;
+    }
+  });
+
+  ActivitiesView = app.TableView
+
+  var activities = new Activities;
+  var activitiesView = new ActivitiesView({
+    el: $('#activity-table-container'),
+    collection: activities,
+    RowView: ActivityView
+  });
+  var pageNavView = new PaginationView({collection: activities});
+  activitiesView.$el.after(pageNavView.render().$el);
+  activities.fetch({reset: true});
+</script>
+{% endblock %}

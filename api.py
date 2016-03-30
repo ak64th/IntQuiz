@@ -52,9 +52,11 @@ class IntOwnerResource(IntRestResource, RestrictOwnerResource):
 
 
 class IntOnlyViewByOwnerResource(IntOwnerResource):
+    owner_field = 'user'
+
     def restrict_get_query(self, user, query):
         if not user.admin:
-            query.where(getattr(self.model, self.owner_field) == g.user)
+            query = query.where(getattr(self.model, self.owner_field) == g.user)
         return query
 
     def process_query(self, query):
@@ -74,6 +76,10 @@ class QuestionResource(IntRestResource):
     pass
 
 
+class ActivityResource(IntOnlyViewByOwnerResource):
+    include_resources = {'book': QuizBookResource, 'user': UserResource}
+
+
 user_auth = IntAuthentication(auth)
 
 api = RestAPI(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
@@ -81,3 +87,4 @@ api = RestAPI(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
 api.register(User, UserResource)
 api.register(QuizBook, QuizBookResource)
 api.register(Question, QuestionResource)
+api.register(Activity, ActivityResource)

@@ -134,6 +134,12 @@ def question_list(book_id):
     return render_template('questions.html', book_id=book_id)
 
 
+@app.route('/activities/')
+@auth.login_required
+def activity_list():
+    return render_template('activities.html', front_host=app.config['FRONT_HOST'])
+
+
 # noinspection PyUnboundLocalVariable
 @app.route('/activities/add/', defaults={'pk': None}, endpoint='add_activity', methods=['GET', 'POST'])
 @app.route('/activities/edit/<int:pk>/', endpoint='edit_activity', methods=['GET', 'POST'])

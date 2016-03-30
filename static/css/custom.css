@@ -1,4 +1,4 @@
-.table-scrollable{
+.table-container, .table-scrollable{
   overflow-x:scroll
 }
 
