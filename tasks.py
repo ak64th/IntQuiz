@@ -66,8 +66,8 @@ def generate_json_files_for_activity(activity):
             "multi": activity.multi_points
         },
         "info_fields": [],
-        "start_at": activity.start_at.isoformat(),
-        "end_at": activity.end_at.isoformat(),
+        "start_at": activity.start_at.isoformat() + '+08:00',
+        "end_at": activity.end_at.isoformat() + '+08:00',
         "show_answer": activity.show_answer
     }
 
