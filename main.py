@@ -2,20 +2,18 @@
 import logging
 import logging.handlers
 import datetime
-import functools
-import itertools
+
 import openpyxl
 import os
-
-from flask import flash, g, redirect, request, render_template, jsonify, make_response, url_for
+from flask import flash, g, redirect, request, render_template, url_for
 from peewee import create_model_tables
 from flask_peewee.utils import make_password, get_object_or_404
-
 from app import app, db
 from auth import auth
 from api import api
 from models import *
 import excel_tools
+import tasks
 
 auth.setup()
 api.setup()
@@ -161,7 +159,7 @@ def activity_detail(pk):
         multi = request.form.get('multi', 0, type=int)
         single_points = request.form.get('single_points', 0, type=int)
         multi_points = request.form.get('multi_points', 0, type=int)
-        show_answer = request.form.get('show_answer', type=bool)
+        show_answer = request.form.get('show_answer', False, type=bool)
         datetimerange = request.form.get('datetimerange')
         info_field_1 = request.form.get('info_field_1')
         info_field_2 = request.form.get('info_field_2')
@@ -174,15 +172,23 @@ def activity_detail(pk):
         if chances and chances < 1:
             flash(u'答题次数不能小于1', 'danger')
             valid = False
-        if type == Activity.ORDINARY and single + multi < 1:
-            flash(u'普通模式下，题目总数不能小于1', 'danger')
-            valid = False
+        if type == Activity.ORDINARY:
+            if single + multi < 1:
+                flash(u'普通模式下，题目总数不能小于1', 'danger')
+                valid = False
+            single_count = activity.book.questions.where(Question.type == Question.SINGLE).count()
+            multi_count = activity.book.questions.where(Question.type == Question.MULTI).count()
+            if single_count < single or multi_count < multi:
+                flash(u'设置的题目数量多于题库中题目数量，目前题库中共有单选{}题，多选{}题'
+                      .format(single_count, multi_count), 'danger')
+                valid = False
         if any(map(lambda x: x < 0, [time_limit, single, multi, single_points, multi_points])):
             flash(u'时间限制，题目数量和分值不能为负', 'danger')
             valid = False
         if single_points + multi_points < 1:
             flash(u'单选和多选分值不能同时为0', 'danger')
             valid = False
+
 
         def datetime_format(date_string):
             return datetime.datetime.strptime(date_string, u'%Y-%m-%d %H:%M:%S')
@@ -217,8 +223,9 @@ def activity_detail(pk):
             activity.info_field_3 = info_fields[2]
             activity.user = g.user
             if activity.save():
+                tasks.generate_json_files_for_activity(activity)
                 flash(u'保存成功', 'success')
-                # return redirect()
+                return redirect(url_for('edit_activity', pk=activity.id))
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
 
@@ -233,11 +240,11 @@ def init_db():
 
 
 if __name__ == '__main__':
-    # logger = logging.getLogger('peewee')
-    # logger.setLevel(logging.DEBUG)
-    # stream_handler = logging.StreamHandler()
-    # stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
-    # logger.addHandler(stream_handler)
+    logger = logging.getLogger('peewee')
+    logger.setLevel(logging.DEBUG)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s"))
+    logger.addHandler(stream_handler)
 
     init_db()
     app.run(host='0.0.0.0', debug=True, threaded=True)

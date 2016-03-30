@@ -5,6 +5,7 @@
   <h1>活动管理</h1>
 </section>
 <section class="content">
+  <a href="{{url_for('add_activity')}}" class="btn btn-primary">新建</a>
   <div class="row">
     <div class="table-container col-xs-12" id="activity-table-container">
       <table class="table table-bordered table-hover table-striped">
@@ -61,7 +62,7 @@
   <td><%= info_field_1 %></td>
   <td><%= info_field_2 %></td>
   <td><%= info_field_3 %></td>
-  <td><%= code %></td>
+  <td><a href="<%= url %>"><%= url %></a></td>
   <td><a href="/activities/edit/<%= id %>" class="btn btn-primary btn-xs">编辑</a></td>
   <td><%= user.username %></td>
 </script>
@@ -156,10 +157,13 @@
     template: _.template($('#activity-row-tpl').html()),
     render: function(){
       var data = this.model.toJSON();
+      var type_names = {0:'普通', 1:'挑战', 2:'限时'};
+      data['type'] = type_names[data['type']];
       var now = moment();
       var start = moment(data['start_at']);
       var end = moment(data['end_at']);
       data['status'] = (start < now < end)  && '开启' || '关闭';
+      data['url'] = front_host + '/#' + data['code'];
       this.$el.html(this.template(data));
       return this;
     }

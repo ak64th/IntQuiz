@@ -9,3 +9,4 @@ class Configuration(object):
     DEBUG = True
     SECRET_KEY = os.urandom(24).encode('hex')
     FRONT_HOST = 'onetoend.com'
+    DATA_DIST = os.path.join(os.path.dirname(__file__), 'data')
