@@ -163,7 +163,7 @@
       var start = moment(data['start_at']);
       var end = moment(data['end_at']);
       data['status'] = (start < now < end)  && '开启' || '关闭';
-      data['url'] = front_host + '/#' + data['code'];
+      data['url'] = 'http://' + front_host + '/index.html#' + data['code'];
       this.$el.html(this.template(data));
       return this;
     }
