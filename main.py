@@ -7,7 +7,7 @@ import openpyxl
 import os
 from flask import flash, g, redirect, request, render_template, url_for
 from peewee import create_model_tables
-from flask_peewee.utils import make_password, get_object_or_404
+from flask_peewee.utils import get_object_or_404
 from app import app, db
 from auth import auth
 from api import api
@@ -33,8 +33,8 @@ def reset_password():
         confirm = request.form.get('confirm')
         if password and len(password) < 6:
             flash(u'新密码不能少于六位', 'danger')
-        if password and confirm and password == confirm:
-            g.user.set_password(password)
+        elif password and confirm and password == confirm:
+            g.user.password = password
             g.user.save()
             flash(u'修改成功', 'success')
         else:
@@ -57,7 +57,7 @@ def account_list():
             else:
                 user = User()
             user.username = username
-            user.set_password(password)
+            user.password = password
             if user.save():
                 flash(u'操作成功', 'success')
     return render_template('accounts.html')
@@ -234,7 +234,7 @@ def init_db():
     to_create = User, QuizBook, Question, Activity
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
-    defaults = dict(password=make_password('123456'))
+    defaults = dict(password='123456')
     User.get_or_create(username='admin', admin=True, defaults=defaults)
     User.get_or_create(username=u'王禄', admin=False, defaults=defaults)
 
