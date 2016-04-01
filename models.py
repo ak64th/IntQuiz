@@ -30,6 +30,9 @@ class User(Base, BaseUser):
     def __unicode__(self):
         return self.username
 
+    class Meta:
+        order_by = None
+
 
 class QuizBook(Base):
     title = TextField()
