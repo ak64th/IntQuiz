@@ -33,6 +33,11 @@
 </script>
 
 <script>
+$(function() {
+  new IntApp.AccountSectionView($('section.content')).render();
+});
+
+/*
   var Users = app.Collection.extend({
     url: '/api/v1/user'
   });
@@ -63,6 +68,6 @@
     var usersView = new UsersView({el: $('.table-container'), collection: users});
     users.fetch();
     //.done(app.alert('载入完成', 'success'));
-  });
+  }); */
 </script>
 {% endblock %}
