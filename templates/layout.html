@@ -98,5 +98,16 @@
     </button>
   </div>
 </script>
+<script>
+$(function(){
+  $.ajaxSetup({
+    statusCode: {
+      401: function(){
+        window.location.replace('/login');
+      }
+    }
+  });
+});
+</script>
 {% endblock %}
 </html>
