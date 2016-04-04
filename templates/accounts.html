@@ -34,40 +34,7 @@
 
 <script>
 $(function() {
-  new IntApp.AccountSectionView($('section.content')).render();
+  new IntApp.AccountPageView({el: $('section.content')}).render();
 });
-
-/*
-  var Users = app.Collection.extend({
-    url: '/api/v1/user'
-  });
-
-  var UserView = Backbone.View.extend({
-    tagName: 'tr',
-    template: _.template($('#user-row-tpl').html()),
-    render: function(){
-      this.$el.html(this.template(
-        this.model.toJSON()
-      ));
-      return this;
-    }
-  });
-
-  var UsersView = Backbone.View.extend({
-    initialize: function(){
-      this.listenTo(this.collection, 'add', this.addRow);
-    },
-    addRow: function(model){
-      var view = new UserView({model: model});
-      this.$('table tbody').append(view.render().$el);
-    }
-  });
-
-  $(function() {
-    var users = new Users;
-    var usersView = new UsersView({el: $('.table-container'), collection: users});
-    users.fetch();
-    //.done(app.alert('载入完成', 'success'));
-  }); */
 </script>
 {% endblock %}
