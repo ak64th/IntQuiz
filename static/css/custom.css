@@ -2,6 +2,6 @@
   overflow-x:scroll
 }
 
-#upload-form-container {
-  margin-bottom: 1em
+.table-control {
+  margin-bottom: 0.5em
 }

@@ -787,6 +787,7 @@ a:focus {
   margin-top: 1px;
   top: 100px;
   left: 20px;
+  z-index: 1151 !important;
 /* Calendars */
 }
 .daterangepicker:before,
