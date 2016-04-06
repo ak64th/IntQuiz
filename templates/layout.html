@@ -10,7 +10,7 @@
   <link href="/static/css/custom.css" rel="stylesheet" type="text/css">
 </head>
 {% block body %}
-<body class="skin-blue sidebar-mini sidebar-collapse">
+<body class="skin-blue sidebar-mini">
 <div class="wrapper">
   {% block header %}
   <header class="main-header">
@@ -104,7 +104,7 @@ $(function(){
   $.ajaxSetup({
     statusCode: {
       401: function(){
-        window.location.replace('/login');
+        window.location.replace('{{ url_for('auth.login') }}');
       }
     }
   });

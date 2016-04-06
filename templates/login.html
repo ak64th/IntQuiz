@@ -1,5 +1,9 @@
 {% extends "layout.html" %}
 
+
+{% block sidebar %}
+{% endblock sidebar %}
+
 {% block content %}
 <section class="content-header">
   <h1>登陆</h1>
@@ -28,4 +32,13 @@
     </form>
   </div>
 </section>
+{% endblock %}
+
+{% block script %}
+{{ super() }}
+<script>
+$(function() {
+  $('body').removeClass('sidebar-mini').addClass('sidebar-collapse');
+});
+</script>
 {% endblock %}
