@@ -5,6 +5,13 @@
   <h1>帐号管理</h1>
 </section>
 <section class="content">
+  <p>创建的新用户如果和老用户重名将不会生效</p>
+  <p>修改密码时旧密码会清空</p>
+  <div class="row table-control">
+    <form class="form-inline col-xs-12">
+      <button type="button" class="btn btn-primary" data-toggle='modal' data-target='#userModalForm'>创建新用户</button>
+    </form>
+  </div>
   <div class="row">
     <div class="table-container col-xs-12">
       <table class="table table-bordered table-hover table-striped">
@@ -26,12 +33,6 @@
 
 {% block script %}
 {{ super() }}
-<script type="application/template" id="user-row-tpl">
-  <td><%= id %></td>
-  <td><%= username %></td>
-  <td><a type="button" class="btn btn-default btn-xs">修改密码</a></td>
-</script>
-
 <script>
 $(function() {
   new IntApp.AccountPageView({el: $('section.content')}).render();

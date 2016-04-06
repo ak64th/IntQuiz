@@ -14,8 +14,8 @@ class IntAuthentication(Authentication):
 
     def authorize(self):
         if request.method in self.protected_methods:
-            return False
-        return self.auth.get_logged_in_user()
+            return self.auth.get_logged_in_user()
+        return True
 
 
 class IntRestResource(RestResource):
