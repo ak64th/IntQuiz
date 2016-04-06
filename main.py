@@ -5,7 +5,7 @@ import datetime
 
 import openpyxl
 import os
-from flask import flash, g, redirect, request, render_template, url_for
+from flask import flash, g, redirect, request, render_template, send_from_directory, url_for
 from peewee import create_model_tables
 from flask_peewee.utils import get_object_or_404
 from app import app, db
@@ -124,6 +124,11 @@ def handle_sheet_file(title, f):
             Question.insert_many(validated).execute()
         count = Question.select().where(Question.book == book).count()
         flash(u"""保存成功，目前该题库共有{}题""".format(count), 'success')
+
+
+@app.route('/quizbooks/template')
+def quiz_book_template():
+    return send_from_directory('media', 'template.xlsx')
 
 
 @app.route('/quizbooks/<book_id>/questions')
