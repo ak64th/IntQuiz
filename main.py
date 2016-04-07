@@ -131,10 +131,16 @@ def quiz_book_template():
     return send_from_directory('media', 'template.xlsx')
 
 
-@app.route('/quizbooks/<book_id>/questions')
+@app.route('/quizbooks/<book_id>/questions', endpoint='book_question_list')
+@app.route('/questions', endpoint='question_list', defaults={'book_id': None})
 @auth.login_required
 def question_list(book_id):
-    return render_template('questions.html', book_id=book_id)
+    if not book_id:
+        book_id = QuizBook.get().id
+    books = QuizBook.select()
+    if not g.user.admin:
+        books = books.where(QuizBook.user == g.user)
+    return render_template('questions.html', book_id=book_id, books=books)
 
 
 @app.route('/activities/')

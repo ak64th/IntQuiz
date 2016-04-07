@@ -5,6 +5,23 @@
   <h1>题库内容</h1>
 </section>
 <section class="content">
+  <div class="row table-control">
+    <form class="form-inline col-xs-12">
+      <div class="form-group">
+        <label for="book" class="control-label">题库选择</label>
+        <select class="form-control" id="book" name="book">
+        {% for book in books %}
+          {% if book.id|string() == book_id|string() %}
+          <option value="{{ book.id }}" selected="selected">{{ book.title }}</option>
+          {% else %}
+          <option value="{{ book.id }}">{{ book.title }}</option>
+          {% endif %}
+        {% endfor %}
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary">载入题库</button>
+    </form>
+  </div>
   <div class="row">
     <div class="table-responsive table-scrollable col-xs-12" id="question-table-container">
       <table class="table table-bordered table-hover table-striped">

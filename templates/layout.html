@@ -38,7 +38,12 @@
             <li><a href="{{ url_for('auth.logout') }}"><i class="glyphicon glyphicon-log-out"></i> 退出 </a></li>
           </ul>
         </li>
-        <li><a href="{{ url_for('quiz_book_list') }}"><i class="glyphicon glyphicon-book"></i> <span>题库</span></a></li>
+        <li class="treeview"><a href="#"><i class="glyphicon glyphicon-book"></i><span>题库</span></a>
+          <ul class="treeview-menu">
+            <li><a href="{{ url_for('quiz_book_list') }}"><i class="glyphicon glyphicon-book"></i> <span>题库管理</span></a></li>
+            <li><a href="{{ url_for('question_list') }}"><i class="glyphicon glyphicon-book"></i> <span>问题列表</span></a></li>
+          </ul>
+        </li>
         <li><a href="{{ url_for('activity_list') }}"><i class="glyphicon glyphicon-tasks"></i> <span>活动</span></a></li>
       </ul>
     </section>
