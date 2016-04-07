@@ -20,6 +20,7 @@ class IntAuthentication(Authentication):
 
 class IntRestResource(RestResource):
     paginate_by = 10
+
     def get_request_metadata(self, paginated_query):
         var = paginated_query.page_var
         request_arguments = request.args.copy()
@@ -52,8 +53,6 @@ class IntOwnerResource(IntRestResource, RestrictOwnerResource):
 
 
 class IntOnlyViewByOwnerResource(IntOwnerResource):
-    owner_field = 'user'
-
     def restrict_get_query(self, user, query):
         if not user.admin:
             query = query.where(getattr(self.model, self.owner_field) == g.user)
@@ -68,7 +67,7 @@ class UserResource(IntRestResource):
     exclude = ('password',)
 
 
-class QuizBookResource(IntOwnerResource):
+class QuizBookResource(IntOnlyViewByOwnerResource):
     include_resources = {'user': UserResource}
 
 
