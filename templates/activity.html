@@ -41,13 +41,13 @@
 
         <div class="col-sm-10">
           <select class="form-control" id="book" name="book">
-            {% for book in books %}
-            {% if activity.book %}
+          {% for book in books %}
+            {% if activity.book.id|string() == book_id|string() %}
             <option value="{{ book.id }}" selected="selected">{{ book.title }}</option>
             {% else %}
             <option value="{{ book.id }}">{{ book.title }}</option>
             {% endif %}
-            {% endfor %}
+          {% endfor %}
           </select>
         </div>
       </div>
