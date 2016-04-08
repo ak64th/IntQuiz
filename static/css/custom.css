@@ -5,3 +5,7 @@
 .table-control {
   margin-bottom: 0.5em
 }
+
+td.content {
+  max-width: 400px
+}
