@@ -128,8 +128,8 @@ def handle_sheet_file(title, f):
 
 @app.route('/quizbooks/template')
 def quiz_book_template():
-    return send_from_directory('media', 'template.xlsx', mimetype= \
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return send_from_directory('media', u'template.xlsx', as_attachment=True,
+                               mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 
 @app.route('/quizbooks/<book_id>/questions', endpoint='book_question_list')
