@@ -19,7 +19,7 @@
         {% endfor %}
         </select>
       </div>
-      <button type="button" class="btn btn-primary">载入题库</button>
+      <button type="button" class="btn btn-primary" id="loadBook">载入题库</button>
     </form>
   </div>
   <div class="row">
@@ -100,8 +100,11 @@
   </ul>
 </script>
 <script>
+$(function() {
   var bookId = {{ book_id }};
-
+  new IntApp.QuestionPageView({el: $('section.content')}).render(bookId);
+});
+/*
   var Question = app.Model.extend({
     defaults: {
       "option_A": "",
@@ -209,5 +212,6 @@
     });
     questions.fetch({reset: true});
   });
+*/
 </script>
 {% endblock %}
