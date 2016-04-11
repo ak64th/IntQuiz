@@ -18,7 +18,7 @@ class Base(db.Model):
         return super(Base, self).save(*args, **kwargs)
 
     class Meta:
-        order_by = ('-created', '-modified')
+        order_by = ('created', 'modified')
 
 
 class User(Base, BaseUser):
