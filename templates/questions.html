@@ -20,6 +20,7 @@
         </select>
       </div>
       <button type="button" class="btn btn-primary" id="loadBook">载入题库</button>
+      <button type="button" class="btn btn-success" data-toggle='modal' data-target='#questionModalForm'>添加问题</button>
     </form>
   </div>
   <div class="row">
@@ -50,168 +51,10 @@
 
 {% block script %}
 {{ super() }}
-<script type="application/template" id="question-row-tpl">
-  <td><%= content %></td>
-  <% if(type == 1){ %>
-  <td><%= "单选" %></td>
-  <% } else { %>
-  <td><%= "多选" %></td>
-  <% } %>
-  <td><%= correct_option %></td>
-  <td><%= option_A %></td>
-  <td><%= option_B %></td>
-  <td><%= option_C %></td>
-  <td><%= option_D %></td>
-  <td><%= option_E %></td>
-  <td><%= option_F %></td>
-  <td>
-    <a href="#" class="btn btn-primary btn-xs">编辑</a>
-  </td>
-</script>
-<script type="application/template" id="page-nav-tpl">
-  <ul class="pagination">
-    <% start = Math.max(1, page - 5) %>
-    <% end = Math.min(pages, page + 5) %>
-    <% if(page == start){ %>
-    <li class="disabled">
-    <% } else { %>
-    <li>
-    <% } %>
-      <a href="#" aria-label="Start" data-id="<%= 1 %>">
-        <span aria-hidden="true">&laquo;</span>
-      </a>
-    </li>
-    <% for(i=start;i < page;i++) { %>
-    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
-    <% } %>
-    <li class="active" data-id="<%= page %>"><a href="#"><%= page %></a></li>
-    <% for(i=page+1;i <= end;i++) { %>
-    <li><a href="#" data-id="<%= i %>"><%= i %></a></li>
-    <% } %>
-    <% if(page == end){ %>
-    <li class="disabled">
-    <% } else { %>
-    <li>
-    <% } %>
-      <a href="#" aria-label="End" data-id="<%= pages %>">
-        <span aria-hidden="true">&raquo;</span>
-      </a>
-    </li>
-  </ul>
-</script>
 <script>
 $(function() {
   var bookId = {{ book_id }};
   new IntApp.QuestionPageView({el: $('section.content')}).render(bookId);
 });
-/*
-  var Question = app.Model.extend({
-    defaults: {
-      "option_A": "",
-      "option_B": "",
-      "option_C": "",
-      "option_D": "",
-      "option_E": "",
-      "option_F": ""
-    }
-  } );
-
-  var Questions = app.Collection.extend({
-    url: '/api/v1/question/',
-    model: Question,
-    state: {'book': bookId},
-    setState: function(){
-      var meta = this.meta || {};
-      _.extend(this.state, _.pick(meta, 'page'));
-    },
-    fetch: function(options){
-      var options = options || {};
-      var data = options.data || {}
-      options.data = _.extend(this.state, data);
-      app.Collection.prototype.fetch.call(this, options).done(
-        _.bind(this.setState, this)
-      );
-    }
-  });
-
-  var QuestionView = Backbone.View.extend({
-    tagName: 'tr',
-    template: _.template($('#question-row-tpl').html()),
-    render: function(){
-      var data = this.model.toJSON()
-      data.correct_option = convertOptionCode(data.correct_option)
-      this.$el.html(this.template(data));
-      return this;
-    }
-  });
-
-  var convertOptionCode = function(s){
-    codes = _.map(s.split(','), function(i){
-      return String.fromCharCode(64 + parseInt(i))
-    });
-    return codes.join(',')
-  };
-
-  var PaginationView = Backbone.View.extend({
-    tagName: 'nav',
-    className: 'page-nav',
-    template: _.template($('#page-nav-tpl').html()),
-    events: {
-      'click a[data-id]': 'loadPage'
-    },
-    initialize: function(){
-      this.listenTo(this.collection, 'reset', this.render);
-    },
-    render: function(){
-      console.log(this.collection.meta);
-      if(this.collection.meta){
-        this.$el.html(this.template(
-          this.collection.meta
-        ));
-      }
-      return this;
-    },
-    loadPage: function(e){
-      e.preventDefault();
-      var data = $(e.currentTarget).data();
-      this.collection.fetch({data:{page: data.id}, reset: true})
-    }
-  });
-
-  var QuestionsView = Backbone.View.extend({
-    initialize: function(options){
-      this.pageNavView = new PaginationView({collection: this.collection});
-      this.$el.after(this.pageNavView.render().$el);
-      this.listenTo(this.collection, 'add', this.add);
-      this.listenTo(this.collection, 'reset', this.render);
-    },
-    _row: function(model){
-      return new QuestionView({model: model});
-    },
-    add: function(model){
-      var row = this._row(model);
-      row.$el.addClass("success");
-      this.$('table tbody').prepend(row.render().$el);
-    },
-    render: function(collection){
-      var $tbody = this.$('table tbody');
-      $tbody.html('');
-      collection.each(function(model){
-        var row = this._row(model);
-        $tbody.append(row.render().$el);
-      }, this);
-      return this;
-    }
-  });
-
-  $(function() {
-    var questions = new Questions;
-    var questionsView = new QuestionsView({
-      el: $('#question-table-container'),
-      collection: questions
-    });
-    questions.fetch({reset: true});
-  });
-*/
 </script>
 {% endblock %}
