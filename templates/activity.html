@@ -97,7 +97,7 @@
         <label for="datetimerange" class="col-sm-2 control-label">活动时间</label>
 
         <div class="col-sm-10">
-          <input type="datetime-local" class="form-control" id="datetimerange" name="datetimerange" placeholder="请从下拉框内选择">
+          <input type="text" class="form-control" id="datetimerange" name="datetimerange" placeholder="请从下拉框内选择">
         </div>
       </div>
       <h4>用户信息</h4>
@@ -160,9 +160,9 @@ $(function(){
     },
     timePicker: true,
     timePickerIncrement: 15,
-    startDate: new Date('{{ activity.start_at.isoformat() }}'),
+    startDate: new moment('{{ activity.start_at.isoformat() }}', moment.ISO_8601),
     {% if activity.end_at %}
-    endDate: new Date('{{ activity.end_at.isoformat() }}')
+    endDate: new moment('{{ activity.end_at.isoformat() }}', moment.ISO_8601)
     {% endif %}
   });
   $('textarea#welcome').wysihtml5({
