@@ -97,7 +97,7 @@
         <label for="datetimerange" class="col-sm-2 control-label">活动时间</label>
 
         <div class="col-sm-10">
-          <input type="text" class="form-control" id="datetimerange" name="datetimerange" placeholder="请从下拉框内选择">
+          <input type="text " class="form-control" id="datetimerange" name="datetimerange" placeholder="请从下拉框内选择">
         </div>
       </div>
       <h4>用户信息</h4>
@@ -150,6 +150,7 @@
 
 {% block script %}
 {{ super() }}
+<script src="/static/js/plugin.js"></script>
 <script>
 $(function(){
   $('#datetimerange').daterangepicker({
