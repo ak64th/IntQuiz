@@ -237,7 +237,7 @@ def activity_detail(pk):
             if activity.save():
                 tasks.generate_json_files_for_activity(activity)
                 flash(u'保存成功', 'success')
-                return redirect(url_for('edit_activity', pk=activity.id))
+                return redirect(url_for('activity_list'))
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
 
