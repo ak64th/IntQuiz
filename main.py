@@ -18,7 +18,6 @@ import tasks
 auth.setup()
 api.setup()
 
-
 @app.route('/')
 @auth.login_required
 def index():
@@ -163,7 +162,7 @@ def activity_detail(pk):
         app.logger.debug(request.form)
         name = request.form.get('name')
         welcome = request.form.get('welcome')
-        type = request.form.get('type', type=int)
+        _type = request.form.get('type', type=int)
         book = request.form.get('book', type=int)
         chances = request.form.get('chances', 0, type=int)
         time_limit = request.form.get('time_limit', 0, type=int)
@@ -176,6 +175,7 @@ def activity_detail(pk):
         info_field_1 = request.form.get('info_field_1')
         info_field_2 = request.form.get('info_field_2')
         info_field_3 = request.form.get('info_field_3')
+        welcome_img = request.files['welcome_img']
 
         valid = True
         if not all((name, book, chances, datetimerange)):
@@ -184,7 +184,7 @@ def activity_detail(pk):
         if chances and chances < 1:
             flash(u'答题次数不能小于1', 'danger')
             valid = False
-        if type == Activity.ORDINARY:
+        if _type == Activity.ORDINARY:
             if single + multi < 1:
                 flash(u'普通模式下，题目总数不能小于1', 'danger')
                 valid = False
@@ -201,6 +201,14 @@ def activity_detail(pk):
             flash(u'单选和多选分值不能同时为0', 'danger')
             valid = False
 
+        if welcome_img:
+            allowed_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.svg', '.bmp', '.webp')
+            basename, ext = os.path.splitext(welcome_img.filename)
+            ext = ext.lower()
+            if not (ext in allowed_extensions):
+                flash(u'不支持的文件扩展名，只支持{}格式'
+                      .format(','.join(allowed_extensions)), 'danger')
+                valid = False
 
         def datetime_format(date_string):
             return datetime.datetime.strptime(date_string, u'%Y-%m-%d %H:%M:%S')
@@ -219,7 +227,7 @@ def activity_detail(pk):
         if valid:
             activity.name = name
             activity.welcome = welcome
-            activity.type = type
+            activity.type = _type
             activity.book = book
             activity.chances = chances
             activity.time_limit = time_limit
@@ -235,7 +243,7 @@ def activity_detail(pk):
             activity.info_field_3 = info_fields[2]
             activity.user = g.user
             if activity.save():
-                tasks.generate_json_files_for_activity(activity)
+                tasks.generate_json_files_for_activity(activity, welcome_img)
                 flash(u'保存成功', 'success')
                 return redirect(url_for('activity_list'))
     books = QuizBook.select()

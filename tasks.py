@@ -1,8 +1,11 @@
 # coding: utf-8
+from PIL import Image
 import os
 import simplejson
 from app import app
 from models import *
+from werkzeug.datastructures import FileStorage
+from werkzeug.utils import secure_filename
 
 DIST_ROOT = app.config['DATA_DIST']
 
@@ -18,16 +21,34 @@ QUESTION_TYPES = {
 }
 
 
+class UploadNotAllowed(Exception):
+    pass
+
+
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
 
-def generate_json_files_for_activity(activity):
+def generate_json_files_for_activity(activity, welcome_img=None):
+    config = {}
     dist_path = os.path.join(DIST_ROOT, activity.code)
 
     if not os.path.exists(dist_path):
         os.makedirs(dist_path)
+
+    def save_image(storage):
+        if not isinstance(storage, FileStorage):
+            raise TypeError("storage must be a werkzeug.FileStorage")
+        image_file = secure_filename(storage.filename)
+        target = os.path.join(dist_path, image_file)
+        image = Image.open(storage)
+        image.thumbnail((1024, 1024), Image.ANTIALIAS)
+        image.save(target, image.format)
+        return image_file
+
+    if welcome_img:
+        config['welcome_img'] = save_image(welcome_img)
 
     file_counter = 1
     singles = []
@@ -47,7 +68,7 @@ def generate_json_files_for_activity(activity):
         generate_json_for_questions(chunk, full_path)
         multiples.append(filename)
 
-    config = {
+    config.update({
         "id": activity.id,
         "name": activity.name,
         "welcome": activity.welcome,
@@ -69,7 +90,7 @@ def generate_json_files_for_activity(activity):
         "start_at": activity.start_at.isoformat() + '+08:00',
         "end_at": activity.end_at.isoformat() + '+08:00',
         "show_answer": activity.show_answer
-    }
+    })
 
     if activity.type in (Activity.ORDINARY, Activity.CHALLENGE):
         config['time_per_question'] = activity.time_limit
