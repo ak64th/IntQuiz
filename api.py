@@ -7,6 +7,12 @@ from auth import auth
 from models import *
 
 
+class IntApi(RestAPI):
+    @property
+    def registry(self):
+        return self._registry
+
+
 class IntAuthentication(Authentication):
     def __init__(self, auth, protected_methods=None):
         super(IntAuthentication, self).__init__(protected_methods)
@@ -81,9 +87,9 @@ class ActivityResource(IntOnlyViewByOwnerResource):
 
 user_auth = IntAuthentication(auth)
 
-api = RestAPI(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
+api = IntApi(app, prefix='/api/v1', default_auth=user_auth, name='simple_api')
 
-api.register(User, UserResource)
+api.register(User, UserResource, auth=Authentication())
 api.register(QuizBook, QuizBookResource)
 api.register(Question, QuestionResource)
 api.register(Activity, ActivityResource)

@@ -5,7 +5,7 @@ import datetime
 
 import openpyxl
 import os
-from flask import flash, g, redirect, request, render_template, send_from_directory, url_for
+from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify
 from peewee import create_model_tables
 from flask_peewee.utils import get_object_or_404
 from app import app, db
@@ -33,12 +33,46 @@ def reset_password():
         if password and len(password) < 6:
             flash(u'新密码不能少于六位', 'danger')
         elif password and confirm and password == confirm:
-            g.user.password = password
+            g.user.set_password(password)
             g.user.save()
             flash(u'修改成功', 'success')
         else:
             flash(u'新密码与确认密码不一致', 'danger')
     return render_template('reset.html')
+
+
+@app.route('/accounts/create', methods=['POST'])
+@auth.admin_required
+def create_user():
+    data = request.get_json(silent=True)
+    user, _ = User.get_or_create(username=data['username'], defaults=dict(password=data['password']))
+    user.set_password(data['password'])
+    user.save()
+    user_resource = api.registry[User]
+    return jsonify(user_resource.serialize_object(user))
+
+
+@app.route('/accounts/<uid>/changePwd', methods=['POST', 'PUT'])
+@auth.admin_required
+def change_password(uid):
+    data = request.get_json(silent=True)
+    user = get_object_or_404(User, (User.id == uid))
+    user.username = data['username']
+    user.set_password(data['password'])
+    user.save()
+    user_resource = api.registry[User]
+    return jsonify(user_resource.serialize_object(user))
+
+
+@app.route('/accounts/<uid>/toggle', methods=['POST', 'PUT'])
+@auth.admin_required
+def toggle_user_state(uid):
+    data = request.get_json(silent=True)
+    user = get_object_or_404(User, (User.id == uid))
+    user.active = data['active']
+    user.save()
+    user_resource = api.registry[User]
+    return jsonify(user_resource.serialize_object(user))
 
 
 @app.route('/accounts', methods=['GET', 'POST'])
@@ -56,7 +90,7 @@ def account_list():
             else:
                 user = User()
             user.username = username
-            user.password = password
+            user.set_password(password)
             if user.save():
                 flash(u'操作成功', 'success')
     return render_template('accounts.html')
@@ -254,9 +288,10 @@ def init_db():
     to_create = User, QuizBook, Question, Activity
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
-    defaults = dict(password='123456')
-    User.get_or_create(username='admin', admin=True, defaults=defaults)
-    User.get_or_create(username=u'王禄', admin=False, defaults=defaults)
+    user, created = User.get_or_create(username='admin', admin=True, defaults=dict(password='123456'))
+    if created:
+        user.set_password('123456')
+        user.save()
 
 
 if __name__ == '__main__':

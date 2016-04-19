@@ -30,10 +30,6 @@ class User(Base, BaseUser):
     def __unicode__(self):
         return self.username
 
-    def save(self, *args, **kwargs):
-        self.set_password(self.password)
-        return super(User, self).save(*args, **kwargs)
-
     class Meta:
         order_by = None
 
