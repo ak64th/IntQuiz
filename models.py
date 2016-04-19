@@ -23,12 +23,17 @@ class Base(db.Model):
 
 class User(Base, BaseUser):
     username = CharField()
-    password = CharField()
+    password = CharField(null=True)
     active = BooleanField(default=True)
     admin = BooleanField(default=False)
 
     def __unicode__(self):
         return self.username
+
+    def check_password(self, password):
+        if not self.password:
+            return False
+        return super(User, self).check_password(password)
 
     class Meta:
         order_by = None

@@ -45,7 +45,7 @@ def reset_password():
 @auth.admin_required
 def create_user():
     data = request.get_json(silent=True)
-    user, _ = User.get_or_create(username=data['username'], defaults=dict(password=data['password']))
+    user, _ = User.get_or_create(username=data['username'])
     user.set_password(data['password'])
     user.save()
     user_resource = api.registry[User]
@@ -183,7 +183,6 @@ def activity_list():
     return render_template('activities.html', front_host=app.config['FRONT_HOST'])
 
 
-# noinspection PyUnboundLocalVariable
 @app.route('/activities/add/', defaults={'pk': None}, endpoint='add_activity', methods=['GET', 'POST'])
 @app.route('/activities/edit/<int:pk>/', endpoint='edit_activity', methods=['GET', 'POST'])
 @auth.login_required
@@ -288,7 +287,7 @@ def init_db():
     to_create = User, QuizBook, Question, Activity
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
-    user, created = User.get_or_create(username='admin', admin=True, defaults=dict(password='123456'))
+    user, created = User.get_or_create(username='admin', admin=True)
     if created:
         user.set_password('123456')
         user.save()
