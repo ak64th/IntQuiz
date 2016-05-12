@@ -101,3 +101,6 @@ class Activity(Base):
     code = TextField(default=_generate_activity_code)
     user = ForeignKeyField(User, verbose_name=u'创建者')
 
+    @property
+    def active(self):
+        return self.start_at < datetime.datetime.now() < self.end_at
