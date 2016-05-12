@@ -244,7 +244,7 @@ def activity_detail(pk):
                 valid = False
 
         def datetime_format(date_string):
-            return datetime.datetime.strptime(date_string, u'%Y-%m-%d %H:%M:%S')
+            return datetime.datetime.strptime(date_string.strip(), u'%Y-%m-%d %H:%M:%S')
 
         if datetimerange:
             try:
