@@ -1,1 +1,1 @@
-__author__ = 'elmery'
+from .manager import ArchiveManager

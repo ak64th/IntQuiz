@@ -104,3 +104,23 @@ class Activity(Base):
     @property
     def active(self):
         return self.start_at < datetime.datetime.now() < self.end_at
+
+
+class UserInfo(Base):
+    uid = IntegerField()
+    info_field_1 = TextField(null=True)
+    info_field_2 = TextField(null=True)
+    info_field_3 = TextField(null=True)
+    game = ForeignKeyField(Activity, related_name=u'participants')
+
+
+class Run(Base):
+    run_id = CharField()
+    uid = IntegerField(null=True)
+    game = ForeignKeyField(Activity, related_name=u'runs')
+
+
+class FinalScore(Base):
+    run_id = CharField()
+    score = IntegerField()
+    game = ForeignKeyField(Activity, related_name=u'final_scores')
