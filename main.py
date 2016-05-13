@@ -284,7 +284,7 @@ def activity_detail(pk):
 
 
 def init_db():
-    to_create = User, QuizBook, Question, Activity
+    to_create = User, QuizBook, Question, Activity, UserInfo, Run, FinalScore
     create_model_tables(models=to_create, fail_silently=True)
     # 创建测试用户
     user, created = User.get_or_create(username='admin', admin=True)

@@ -6,7 +6,7 @@ from peewee import *
 from flask_peewee.auth import BaseUser
 from app import db
 
-__all__ = ['User', 'QuizBook', 'Question', 'Activity']
+__all__ = ['User', 'QuizBook', 'Question', 'Activity', 'UserInfo', 'Run', 'FinalScore']
 
 
 class Base(db.Model):
