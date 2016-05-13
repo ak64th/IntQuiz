@@ -11,7 +11,7 @@ class ArchiveManager(object):
     管理成绩存档
     """
 
-    def __init__(self, redis_client):
+    def __init__(self, redis_client=None):
         self.redis = redis_client or redis.StrictRedis(decode_responses=True)
 
     def archive(self, activity):
@@ -73,14 +73,14 @@ class ArchiveManager(object):
 
         :param activity: 代表活动的models#Activity实例
         :param delete_after_saved: 是否要在归档完数据后删除redis内数据
-        :return:
+        :return: None
         """
         key = 'game:{}:run'.format(activity.id)
         if not self.redis.exists(key):
             return
         Run.delete().where(Run.game == activity.id).execute()
         for run_id, uid in iteritems(self.redis.hgetall(key)):
-            Run.insert(run_id=run_id, uid=uid, game=activity.id)
+            Run.insert(run_id=run_id, uid=uid, game=activity.id).execute()
         else:
             if delete_after_saved:
                 self.redis.delete(key)
@@ -90,14 +90,14 @@ class ArchiveManager(object):
 
         :param activity: 代表活动的models#Activity实例
         :param delete_after_saved: 是否要在归档完数据后删除redis内数据
-        :return:
+        :return: None
         """
         key = 'game:{}:final'.format(activity.id)
         if not self.redis.exists(key):
             return
         FinalScore.delete().where(FinalScore.game == activity.id).execute()
         for run_id, score in iteritems(self.redis.hgetall(key)):
-            FinalScore.insert(run_id=run_id, score=score, game=activity.id)
+            FinalScore.insert(run_id=run_id, score=score, game=activity.id).execute()
         else:
             if delete_after_saved:
                 self.redis.delete(key)
