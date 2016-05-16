@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+<section class="content-header">
+  <h1>活动统计</h1>
+</section>
+<section class="content">
+  <div class="table-container col-xs-12" id="activity-table-container">
+    <table class="table table-bordered table-hover table-striped">
+      <thead>
+      <tr>
+        <th>活动名称</th>
+        <th>答题人次</th>
+        <th>用户数</th>
+        <th>答题详情</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for activity in activities %}
+      <tr>
+        <td>{{ activity.name }}</td>
+        <td>{{ activity.run_count }}</td>
+        <td>{{ activity.user_count }}</td>
+        <td><a href="{{ url_for('activity_stats_detail', activity_id=activity.id) }}">详情</a></td>
+        <td><a href="#">导出</a></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+
+{% block content %}
+<section class="content-header">
+  <h1>活动详情</h1>
+</section>
+<section class="content">
+  <div class="table-container col-xs-12" id="activity-table-container">
+    <table class="table table-bordered table-hover table-striped">
+      <thead>
+      <tr>
+        <th>用户字段1</th>
+        <th>用户字段2</th>
+        <th>用户字段3</th>
+        <th>分数</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for run in runs %}
+      <tr>
+        <td>{{ run.info_field_1 }}</td>
+        <td>{{ run.info_field_2 }}</td>
+        <td>{{ run.info_field_3 }}</td>
+        <td>{{ run.score }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

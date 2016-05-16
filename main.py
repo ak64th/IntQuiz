@@ -6,7 +6,7 @@ import datetime
 import openpyxl
 import os
 from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify
-from peewee import create_model_tables
+from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
 from app import app, db
 from auth import auth
@@ -281,6 +281,35 @@ def activity_detail(pk):
                 return redirect(url_for('activity_list'))
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
+
+@app.route('/stats/')
+@auth.login_required
+def activity_stats_list():
+    query = (Activity
+             .select(Activity.id,
+                     Activity.name,
+                     fn.Count(Run.id).alias('run_count'),
+                     fn.Count(fn.Distinct(Run.uid)).alias('user_count'))
+             .join(Run, JOIN.LEFT_OUTER)
+             .order_by(Activity.created.desc())
+             .naive())
+    activities = query.execute()
+    return render_template('stats.html', activities=activities)
+
+
+@app.route('/stats/<int:activity_id>/')
+@auth.login_required
+def activity_stats_detail(activity_id):
+    query = (Run
+             .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
+             .join(UserInfo, JOIN.LEFT_OUTER, on=(Run.uid == UserInfo.id & Run.game == UserInfo.game))
+             .join(FinalScore, JOIN.LEFT_OUTER, on=(Run.run_id == FinalScore.run_id & Run.game == UserInfo.game))
+             .where(Run.game == activity_id)
+             .order_by(FinalScore.score.desc())
+             .naive())
+    runs = query.execute()
+    return render_template('stats_details.html', runs=runs)
+
 
 
 def init_db():
