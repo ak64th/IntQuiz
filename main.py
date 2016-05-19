@@ -302,14 +302,13 @@ def activity_stats_list():
 def activity_stats_detail(activity_id):
     query = (Run
              .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
-             .join(UserInfo, JOIN.LEFT_OUTER, on=(Run.uid == UserInfo.id & Run.game == UserInfo.game))
-             .join(FinalScore, JOIN.LEFT_OUTER, on=(Run.run_id == FinalScore.run_id & Run.game == UserInfo.game))
+             .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
+             .join(FinalScore, JOIN.LEFT_OUTER, on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
              .where(Run.game == activity_id)
              .order_by(FinalScore.score.desc())
              .naive())
     runs = query.execute()
     return render_template('stats_details.html', runs=runs)
-
 
 
 def init_db():
