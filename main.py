@@ -292,9 +292,9 @@ def activity_stats_list():
                      fn.Count(fn.Distinct(Run.uid)).alias('user_count'))
              .join(Run, JOIN.LEFT_OUTER)
              .order_by(Activity.created.desc())
+             .group_by(Activity.id, Activity.name)
              .naive())
-    activities = query.execute()
-    return render_template('stats.html', activities=activities)
+    return render_template('stats.html', activities=query)
 
 
 @app.route('/stats/<int:activity_id>/')
