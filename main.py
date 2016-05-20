@@ -316,7 +316,7 @@ def activity_stats_detail(activity_id):
              .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
              .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
              .join(FinalScore, JOIN.LEFT_OUTER, on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
-             .where((Run.game == activity_id) & (FinalScore.score.is_null(False)))
+             .where((Run.game == activity_id) & (FinalScore.score > 0))
              .order_by(FinalScore.score.desc())
              .naive())
     runs = query.execute()
