@@ -163,7 +163,11 @@ def handle_sheet_file(title, f):
 
 @app.route('/quizbooks/template')
 def quiz_book_template():
-    return send_from_directory('media', u'template.xlsx', as_attachment=True, mimetype=XLSX_MIMETYPE)
+    return send_from_directory(
+        directory=app.config['MEDIA_PATH'],
+        filename=u'template.xlsx',
+        as_attachment=True,
+        mimetype=XLSX_MIMETYPE)
 
 
 @app.route('/quizbooks/<book_id>/questions', endpoint='book_question_list')
