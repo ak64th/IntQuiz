@@ -283,6 +283,13 @@ def activity_detail(pk):
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
 
+
+@app.route('/welcome_image/<filename>')
+def welcome_image(filename):
+    path = os.path.join(app.config['MEDIA_PATH'], 'welcome_image')
+    return send_from_directory(path, filename)
+
+
 @app.route('/stats/')
 @auth.login_required
 def activity_stats_list():
