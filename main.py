@@ -1,13 +1,15 @@
 # coding=utf-8
+import os
 import logging
 import logging.handlers
 import datetime
 
 import openpyxl
-import os
+from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
 from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify
 from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
+
 from app import app, db
 from auth import auth
 from api import api
@@ -161,8 +163,7 @@ def handle_sheet_file(title, f):
 
 @app.route('/quizbooks/template')
 def quiz_book_template():
-    return send_from_directory('media', u'template.xlsx', as_attachment=True,
-                               mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    return send_from_directory('media', u'template.xlsx', as_attachment=True, mimetype=XLSX_MIMETYPE)
 
 
 @app.route('/quizbooks/<book_id>/questions', endpoint='book_question_list')
@@ -304,7 +305,7 @@ def activity_stats_detail(activity_id):
              .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
              .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
              .join(FinalScore, JOIN.LEFT_OUTER, on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
-             .where(Run.game == activity_id)
+             .where((Run.game == activity_id) & (FinalScore.score.is_null(False)))
              .order_by(FinalScore.score.desc())
              .naive())
     runs = query.execute()
