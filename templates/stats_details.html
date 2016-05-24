@@ -37,5 +37,24 @@
       </tbody>
     </table>
   </div>
+  {% if pages > 1 %}
+  <ul class="pagination">
+    <li class="{{ 'disabled' if cur_page == 1 else ''}}">
+      <a href="{{ url_for('activity_stats_detail', activity_id=activity_id, page=1, limit=paginate_by) }}" aria-label="第一页">
+        <span aria-hidden>&laquo;</span>
+      </a>
+    </li>
+    {% for page in range(1, pages + 1) %}
+    <li class="{{ 'active' if cur_page == page else ''}}">
+      <a href="{{ url_for('activity_stats_detail', activity_id=activity_id, page=page, limit=paginate_by) }}">{{page}}</a>
+    </li>
+    {% endfor %}
+    <li class="{{ 'disabled' if cur_page == pages else ''}}">
+      <a href="{{ url_for('activity_stats_detail', activity_id=activity_id, page=pages, limit=paginate_by) }}" aria-label="最后一页">
+        <span aria-hidden>&raquo;</span>
+      </a>
+    </li>
+  </ul>
+  {% endif %}
 </section>
 {% endblock %}
