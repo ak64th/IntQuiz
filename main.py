@@ -1,24 +1,33 @@
 # coding=utf-8
-import os
 import logging
 import logging.handlers
 import datetime
 
+import os
 import openpyxl
 from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
 from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify
 from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
-
+import redis
 from app import app, db
 from auth import auth
 from api import api
 from models import *
+from archive import ArchiveManager
 import excel_tools
 import tasks
 
+
 auth.setup()
 api.setup()
+
+if 'REDIS' in app.config:
+    redis_client = redis.StrictRedis.from_url(app.config['REDIS'], decode_responses=True)
+else:
+    redis_client = redis.StrictRedis(decode_responses=True)
+
+manager = ArchiveManager(redis_client)
 
 @app.route('/')
 @auth.login_required
@@ -309,9 +318,12 @@ def activity_stats_list():
     return render_template('stats.html', activities=query)
 
 
-@app.route('/stats/<int:activity_id>/')
+@app.route('/stats/<int:activity_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def activity_stats_detail(activity_id):
+    if request.method == 'POST':
+        activity = Activity.get(Activity.id == activity_id)
+        manager.archive(activity)
     query = (Run
              .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
              .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))

@@ -6,6 +6,13 @@
   <h1>活动详情</h1>
 </section>
 <section class="content">
+  {% if user.admin %}
+  <div class="row table-control">
+    <form class="form-inline col-xs-12" method="post">
+      <button type="submit" class="btn btn-warning">归档成绩信息</button>
+    </form>
+  </div>
+  {% endif %}
   <div class="table-container col-xs-12" id="activity-table-container">
     <table class="table table-bordered table-hover table-striped">
       <thead>
