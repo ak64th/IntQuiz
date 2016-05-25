@@ -105,6 +105,23 @@ class Activity(Base):
     def active(self):
         return self.start_at < datetime.datetime.now() < self.end_at
 
+    @property
+    def archive_model(self):
+        activity_id = self.id
+
+        class ArchiveModel(db.Model):
+            run_id = CharField()
+            uid = IntegerField(null=True)
+            info_field_1 = TextField(null=True)
+            info_field_2 = TextField(null=True)
+            info_field_3 = TextField(null=True)
+            score = IntegerField(index=True)
+
+            class Meta:
+                db_table = u"archive_%s" % activity_id
+
+        return ArchiveModel
+
 
 class UserInfo(Base):
     uid = IntegerField()
