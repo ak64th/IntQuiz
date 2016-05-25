@@ -6,7 +6,7 @@ from peewee import *
 from flask_peewee.auth import BaseUser
 from app import db
 
-__all__ = ['User', 'QuizBook', 'Question', 'Activity', 'UserInfo', 'Run', 'FinalScore']
+__all__ = ['User', 'QuizBook', 'Question', 'Activity', 'UserInfo', 'Run', 'FinalScore', 'Archive']
 
 
 class Base(db.Model):
@@ -105,25 +105,8 @@ class Activity(Base):
     def active(self):
         return self.start_at < datetime.datetime.now() < self.end_at
 
-    @property
-    def archive_model(self):
-        activity_id = self.id
 
-        class ArchiveModel(db.Model):
-            run_id = CharField()
-            uid = IntegerField(null=True)
-            info_field_1 = TextField(null=True)
-            info_field_2 = TextField(null=True)
-            info_field_3 = TextField(null=True)
-            score = IntegerField(index=True)
-
-            class Meta:
-                db_table = u"archive_%s" % activity_id
-
-        return ArchiveModel
-
-
-class UserInfo(Base):
+class UserInfo(db.Model):
     uid = IntegerField()
     info_field_1 = TextField(null=True)
     info_field_2 = TextField(null=True)
@@ -131,13 +114,28 @@ class UserInfo(Base):
     game = ForeignKeyField(Activity, related_name=u'participants')
 
 
-class Run(Base):
+class Run(db.Model):
     run_id = CharField()
     uid = IntegerField(null=True)
     game = ForeignKeyField(Activity, related_name=u'runs')
 
 
-class FinalScore(Base):
+class FinalScore(db.Model):
     run_id = CharField()
     score = IntegerField()
     game = ForeignKeyField(Activity, related_name=u'final_scores')
+
+
+class Archive(db.Model):
+    run_id = CharField()
+    uid = IntegerField(null=True)
+    info_field_1 = TextField(null=True)
+    info_field_2 = TextField(null=True)
+    info_field_3 = TextField(null=True)
+    score = IntegerField(index=True)
+    game = ForeignKeyField(Activity, related_name=u'archives')
+
+    class Meta:
+        indexes = (
+            (('game', 'score'), False),
+        )

@@ -4,29 +4,28 @@ import redis
 import simplejson as json
 from peewee import JOIN
 from six import iteritems
-from models import UserInfo, Run, FinalScore
+from models import UserInfo, Run, FinalScore, Archive
 
 
 def archive_activity_rank(activity):
-    archive_model = activity.archive_model
-    archive_model.drop_table(fail_silently=True)
-    archive_model.create_table()
+    Archive.delete().where(Archive.game == activity).execute()
     source = (Run
               .select(Run.run_id, UserInfo.uid, UserInfo.info_field_1, UserInfo.info_field_2,
-                      UserInfo.info_field_3, FinalScore.score)
+                      UserInfo.info_field_3, FinalScore.score, Run.game)
               .join(UserInfo, JOIN.LEFT_OUTER,
                     on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
               .join(FinalScore, JOIN.LEFT_OUTER,
                     on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
               .where((Run.game == activity) & (FinalScore.score > 0))
               .order_by(FinalScore.score.desc()))
-    archive_model.insert_from([
-        archive_model.run_id,
-        archive_model.uid,
-        archive_model.info_field_1,
-        archive_model.info_field_2,
-        archive_model.info_field_3,
-        archive_model.score
+    Archive.insert_from([
+        Archive.run_id,
+        Archive.uid,
+        Archive.info_field_1,
+        Archive.info_field_2,
+        Archive.info_field_3,
+        Archive.score,
+        Archive.game
     ], source)
 
 
