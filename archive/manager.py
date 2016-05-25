@@ -26,7 +26,7 @@ def archive_activity_rank(activity):
         Archive.info_field_3,
         Archive.score,
         Archive.game
-    ], source)
+    ], source).execute()
 
 
 class ArchiveManager(object):
