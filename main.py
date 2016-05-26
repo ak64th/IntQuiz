@@ -3,11 +3,12 @@ import logging
 import logging.handlers
 import datetime
 import math
-
 import os
+
 import openpyxl
+import openpyxl.writer.excel
 from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
-from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify
+from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify, make_response
 from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
 import redis
@@ -332,6 +333,25 @@ def activity_stats_detail(activity_id):
     runs = query.paginate(page=page, paginate_by=paginate_by)
     return render_template('stats_details.html', activity_id=activity_id, runs=runs,
                            cur_page=page, paginate_by=paginate_by, pages=pages)
+
+
+@app.route('/stats/<int:activity_id>/workbook')
+@auth.login_required
+def activity_stats_workbook(activity_id):
+    activity = Activity.get(Activity.id == activity_id)
+    title = u'-'.join([u'活动详情', activity.name])
+    wb = openpyxl.Workbook(write_only=False)
+    ws = wb.active
+    ws.title = title
+    ws.append([u'名次', u'用户字段1', u'用户字段2', u'用户字段3', u'分数'])
+    for i, archive in enumerate(activity.archives.order_by(Archive.score.desc()), 1):
+        ws.append([i, archive.info_field_1, archive.info_field_2, archive.info_field_3, archive.score])
+    virtual_workbook = openpyxl.writer.excel.save_virtual_workbook(wb)
+    response = make_response(virtual_workbook)
+    response.mimetype = XLSX_MIMETYPE
+    response.headers.add(u'Content-Disposition',
+                         u'attachment; filename=activity_%s.xlsx' % activity.id)
+    return response
 
 
 def init_db():

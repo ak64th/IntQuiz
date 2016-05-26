@@ -24,7 +24,7 @@
         <td>{{ activity.run_count }}</td>
         <td>{{ activity.user_count }}</td>
         <td><a href="{{ url_for('activity_stats_detail', activity_id=activity.id) }}">详情</a></td>
-        <td><a href="#">导出</a></td>
+        <td><a href="{{ url_for('activity_stats_workbook', activity_id=activity.id) }}">导出</a></td>
       </tr>
       {% endfor %}
       </tbody>
