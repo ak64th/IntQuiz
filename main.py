@@ -322,18 +322,19 @@ def activity_stats_list():
 @app.route('/stats/<int:activity_id>/', methods=['GET', 'POST'])
 @auth.login_required
 def activity_stats_detail(activity_id):
+    activity = Activity.get(Activity.id == activity_id)
     if request.method == 'POST':
-        activity = Activity.get(Activity.id == activity_id)
         manager.archive(activity)
     page = request.args.get('page', 1, type=int)
     paginate_by = request.args.get('limit', 20, type=int)
-    query = (Run
-             .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
-             .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
-             .join(FinalScore, JOIN.LEFT_OUTER, on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
-             .where((Run.game == activity_id) & (FinalScore.score > 0))
-             .order_by(FinalScore.score.desc())
-             .naive())
+    # query = (Run
+    #          .select(Run.id, UserInfo.info_field_1, UserInfo.info_field_2, UserInfo.info_field_3, FinalScore.score)
+    #          .join(UserInfo, JOIN.LEFT_OUTER, on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
+    #          .join(FinalScore, JOIN.LEFT_OUTER, on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
+    #          .where((Run.game == activity_id) & (FinalScore.score > 0))
+    #          .order_by(FinalScore.score.desc())
+    #          .naive())
+    query = activity.archives
     pages = int(math.ceil(float(query.count()) / paginate_by))
     runs = query.paginate(page=page, paginate_by=paginate_by)
     return render_template('stats_details.html', activity_id=activity_id, runs=runs,

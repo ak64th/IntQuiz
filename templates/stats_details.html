@@ -17,7 +17,7 @@
     <table class="table table-bordered table-hover table-striped">
       <thead>
       <tr>
-        <th>id</th>
+        <th>run_id</th>
         <th>用户字段1</th>
         <th>用户字段2</th>
         <th>用户字段3</th>
@@ -27,7 +27,7 @@
       <tbody>
       {% for run in runs %}
       <tr>
-        <td>{{ run.id }}</td>
+        <td>{{ run.run_id }}</td>
         <td>{{ run.info_field_1 or '' }}</td>
         <td>{{ run.info_field_2 or '' }}</td>
         <td>{{ run.info_field_3 or '' }}</td>
