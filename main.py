@@ -8,10 +8,12 @@ import os
 import openpyxl
 import openpyxl.writer.excel
 from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
-from flask import flash, g, redirect, request, render_template, send_from_directory, url_for, jsonify, make_response
+from flask import (flash, g, redirect, request, render_template,
+                   send_from_directory, url_for, jsonify, make_response)
 from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
 import redis
+
 from app import app, db
 from auth import auth
 from api import api
@@ -30,6 +32,7 @@ else:
     redis_client = redis.StrictRedis(decode_responses=True)
 
 manager = ArchiveManager(redis_client)
+
 
 @app.route('/')
 @auth.login_required
@@ -208,7 +211,6 @@ def activity_detail(pk):
     else:
         activity = Activity(type=0, book=QuizBook.get(), start_at=datetime.datetime.now(), show_answer=True)
     if request.method == 'POST':
-        app.logger.debug(request.form)
         name = request.form.get('name')
         welcome = request.form.get('welcome')
         _type = request.form.get('type', type=int)
