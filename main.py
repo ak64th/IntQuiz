@@ -327,7 +327,7 @@ def activity_stats_detail(activity_id):
         manager.archive(activity)
     page = request.args.get('page', 1, type=int)
     paginate_by = request.args.get('limit', 20, type=int)
-    query = activity.archives
+    query = activity.archives.order_by(Archive.id)
     pages = int(math.ceil(float(query.count()) / paginate_by))
     runs = query.paginate(page=page, paginate_by=paginate_by)
     return render_template('stats_details.html', activity_id=activity_id, runs=runs,
