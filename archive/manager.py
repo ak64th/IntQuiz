@@ -91,7 +91,12 @@ class ArchiveManager(object):
         UserInfo.delete().where(UserInfo.game == activity.id).execute()
         count = 0
         for uid, userinfo in iteritems(self.redis.hgetall(key)):
-            data = json.loads(userinfo)
+            _data = json.loads(userinfo)
+            data = {
+                'info_field_1': _data.get('info_field_1'),
+                'info_field_2': _data.get('info_field_2'),
+                'info_field_3': _data.get('info_field_3')
+            }
             data.update({'uid': uid, 'game': activity.id})
             if UserInfo.insert(**data).execute():
                 count += 1
