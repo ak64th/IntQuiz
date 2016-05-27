@@ -117,6 +117,8 @@ class UserInfo(db.Model):
 class Run(db.Model):
     run_id = CharField()
     uid = IntegerField(null=True)
+    start = DateTimeField(null=True)
+    end = DateTimeField(null=True)
     game = ForeignKeyField(Activity, related_name=u'runs')
 
 
@@ -133,6 +135,8 @@ class Archive(db.Model):
     info_field_2 = TextField(null=True)
     info_field_3 = TextField(null=True)
     score = IntegerField(index=True)
+    start = DateTimeField(null=True)
+    end = DateTimeField(null=True)
     game = ForeignKeyField(Activity, related_name=u'archives')
 
     class Meta:

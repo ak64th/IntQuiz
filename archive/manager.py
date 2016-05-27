@@ -11,7 +11,7 @@ def archive_activity_rank(activity):
     Archive.delete().where(Archive.game == activity).execute()
     source = (Run
               .select(Run.run_id, UserInfo.uid, UserInfo.info_field_1, UserInfo.info_field_2,
-                      UserInfo.info_field_3, FinalScore.score, Run.game)
+                      UserInfo.info_field_3, FinalScore.score, Run.start, Run.end, Run.game)
               .join(UserInfo, JOIN.LEFT_OUTER,
                     on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
               .join(FinalScore, JOIN.LEFT_OUTER,
@@ -25,6 +25,8 @@ def archive_activity_rank(activity):
         Archive.info_field_2,
         Archive.info_field_3,
         Archive.score,
+        Archive.start,
+        Archive.end,
         Archive.game
     ], source).execute()
 
@@ -116,9 +118,15 @@ class ArchiveManager(object):
         if not self.redis.exists(key):
             return 0
         Run.delete().where(Run.game == activity.id).execute()
+        start_time = self.redis.hgetall('game:{}:start'.format(activity.id))
+        end_time = self.redis.hgetall('game:{}:end'.format(activity.id))
         count = 0
         for run_id, uid in iteritems(self.redis.hgetall(key)):
-            Run.insert(run_id=run_id, uid=uid, game=activity.id).execute()
+            Run.insert(run_id=run_id,
+                       uid=uid,
+                       start=start_time.get(run_id),
+                       end=end_time.get(run_id),
+                       game=activity.id).execute()
             count += 1
         else:
             if delete_after_saved:

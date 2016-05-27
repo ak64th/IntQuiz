@@ -22,6 +22,7 @@
         <th>用户字段2</th>
         <th>用户字段3</th>
         <th>分数</th>
+        <th>成绩提交时间</th>
       </tr>
       </thead>
       <tbody>
@@ -32,6 +33,7 @@
         <td>{{ run.info_field_2 or '' }}</td>
         <td>{{ run.info_field_3 or '' }}</td>
         <td>{{ run.score or '' }}</td>
+        <td>{{ run.end|datetimeformat if run.end else '' }}</td>
       </tr>
       {% endfor %}
       </tbody>
