@@ -12,6 +12,7 @@ from flask import (flash, g, redirect, request, render_template,
                    send_from_directory, url_for, jsonify, make_response)
 from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
+from flask_babel import format_datetime
 import redis
 
 from app import app, db
@@ -342,12 +343,13 @@ def activity_stats_detail(activity_id):
 def activity_stats_workbook(activity_id):
     activity = Activity.get(Activity.id == activity_id)
     title = u'-'.join([u'活动详情', activity.name])
-    wb = openpyxl.Workbook(write_only=False)
+    wb = openpyxl.Workbook(guess_types=True)
     ws = wb.active
     ws.title = title
-    ws.append([u'名次', u'用户字段1', u'用户字段2', u'用户字段3', u'分数'])
+    ws.append([u'名次', u'用户字段1', u'用户字段2', u'用户字段3', u'分数', u'提交成绩时间'])
     for i, archive in enumerate(activity.archives.order_by(Archive.score.desc()), 1):
-        ws.append([i, archive.info_field_1, archive.info_field_2, archive.info_field_3, archive.score])
+        ws.append([i, archive.info_field_1, archive.info_field_2,
+                   archive.info_field_3, archive.score, archive.end])
     virtual_workbook = openpyxl.writer.excel.save_virtual_workbook(wb)
     response = make_response(virtual_workbook)
     response.mimetype = XLSX_MIMETYPE
