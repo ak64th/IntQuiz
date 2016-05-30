@@ -7,3 +7,4 @@ flask-peewee==0.6.7
 wtf-peewee==0.2.6
 simplejson==3.8.2
 Pillow==3.2.0
+Flask-Babel==0.11.0
