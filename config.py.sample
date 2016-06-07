@@ -13,3 +13,10 @@ class Configuration(object):
     FRONT_HOST = 'onetoend.com'
     MEDIA_PATH = os.path.join(os.path.dirname(__file__), 'media')
     DATA_DIST = os.path.join(os.path.dirname(__file__), 'data')
+    QUIZ_NODES = [
+        {
+            'host': 'xxx.xxx.xxx.xxx',
+            'username': 'username',
+            'password': 'password'
+        },
+    ]

@@ -6,6 +6,7 @@ from app import app
 from models import *
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+import pysftp
 
 DIST_ROOT = app.config['DATA_DIST']
 
@@ -106,6 +107,9 @@ def generate_json_files_for_activity(activity, welcome_img=None):
     with open(config_filename, 'w') as f:
         simplejson.dump(config, f)
 
+    for node_config in app.config['QUIZ_NODES']:
+        upload_data(node_config, dist_path, activity.code)
+
 
 def generate_json_for_questions(questions, filename):
     objects = []
@@ -122,3 +126,9 @@ def generate_json_for_questions(questions, filename):
         })
     with open(filename, 'w') as f:
         simplejson.dump({'objects': objects}, f, indent=2, separators=(',', ': '))
+
+
+def upload_data(sftp_config, local, remote):
+    with pysftp.Connection(**sftp_config) as sftp:
+        sftp.makedirs(remote, mode=755)
+        sftp.put_d(local, remote)
