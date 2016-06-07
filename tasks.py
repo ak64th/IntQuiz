@@ -1,11 +1,13 @@
 # coding: utf-8
-from PIL import Image
+
 import os
+import shutil
 import simplejson
 from app import app
 from models import *
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
+from PIL import Image
 import pysftp
 
 DIST_ROOT = app.config['DATA_DIST']
@@ -34,9 +36,8 @@ def chunks(l, n):
 def generate_json_files_for_activity(activity, welcome_img=None):
     config = {}
     dist_path = os.path.join(DIST_ROOT, activity.code)
-
-    if not os.path.exists(dist_path):
-        os.makedirs(dist_path)
+    shutil.rmtree(dist_path)
+    os.makedirs(dist_path)
 
     def save_image(storage):
         if not isinstance(storage, FileStorage):
@@ -108,7 +109,9 @@ def generate_json_files_for_activity(activity, welcome_img=None):
         simplejson.dump(config, f)
 
     for node_config in app.config['QUIZ_NODES']:
-        upload_data(node_config, dist_path, activity.code)
+        upload_data(node_config,
+                    local=os.path.abspath(dist_path),
+                    remote=activity.code)
 
 
 def generate_json_for_questions(questions, filename):
