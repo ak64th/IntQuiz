@@ -42,7 +42,8 @@ def generate_json_files_for_activity(activity, welcome_img=None):
     def save_image(storage):
         if not isinstance(storage, FileStorage):
             raise TypeError("storage must be a werkzeug.FileStorage")
-        image_file = secure_filename(storage.filename)
+        ext = os.path.splitext(storage.filename)[1]
+        image_file = secure_filename(activity.code + ext)
         target = os.path.join(dist_path, image_file)
         image = Image.open(storage)
         image.thumbnail((1024, 1024), Image.ANTIALIAS)
