@@ -1,28 +1,23 @@
 # coding=utf-8
-import logging
-import logging.handlers
 import datetime
 import math
-import os
 
+import excel_tools
 import openpyxl
 import openpyxl.writer.excel
-from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
+import os
+import redis
+import tasks
+from api import api
+from app import app, db
+from archive import ArchiveManager
+from auth import auth
 from flask import (flash, g, redirect, request, render_template,
                    send_from_directory, url_for, jsonify, make_response)
-from peewee import create_model_tables, JOIN, fn
 from flask_peewee.utils import get_object_or_404
-from flask_babel import format_datetime
-import redis
-
-from app import app, db
-from auth import auth
-from api import api
 from models import *
-from archive import ArchiveManager
-import excel_tools
-import tasks
-
+from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
+from peewee import create_model_tables, JOIN, fn
 
 auth.setup()
 api.setup()
@@ -369,6 +364,8 @@ def init_db():
 
 
 if __name__ == '__main__':
+    import logging
+    import logging.handlers
     logger = logging.getLogger('peewee')
     logger.setLevel(logging.DEBUG)
     stream_handler = logging.StreamHandler()
