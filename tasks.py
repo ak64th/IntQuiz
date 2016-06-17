@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import errno
 import shutil
 import simplejson
 from app import app
@@ -28,6 +29,32 @@ class UploadNotAllowed(Exception):
     pass
 
 
+def save_welcome_img(storage, activity):
+    if not isinstance(storage, FileStorage):
+        raise TypeError("storage must be a werkzeug.FileStorage")
+
+    allowed_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.svg', '.bmp', '.webp')
+    ext = os.path.splitext(storage.filename)[1]
+    if not (ext.lower() in allowed_extensions):
+        raise UploadNotAllowed(u'不支持的文件扩展名，只支持{}格式'
+                               .format(','.join(allowed_extensions)))
+
+    dist_path = os.path.join(app.config['MEDIA_PATH'], 'welcome_image')
+    try:
+        os.makedirs(dist_path, mode=0o775)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+    image_file = secure_filename(activity.code + ext)
+    target = os.path.join(dist_path, image_file)
+
+    image = Image.open(storage)
+    image.thumbnail((1024, 1024), Image.ANTIALIAS)
+    image.save(target, image.format)
+    return image_file
+
+
 def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
@@ -36,22 +63,12 @@ def chunks(l, n):
 def generate_json_files_for_activity(activity, welcome_img=None):
     config = {}
     dist_path = os.path.join(DIST_ROOT, activity.code)
-    shutil.rmtree(dist_path)
-    os.makedirs(dist_path)
-
-    def save_image(storage):
-        if not isinstance(storage, FileStorage):
-            raise TypeError("storage must be a werkzeug.FileStorage")
-        ext = os.path.splitext(storage.filename)[1]
-        image_file = secure_filename(activity.code + ext)
-        target = os.path.join(dist_path, image_file)
-        image = Image.open(storage)
-        image.thumbnail((1024, 1024), Image.ANTIALIAS)
-        image.save(target, image.format)
-        return image_file
-
-    if welcome_img:
-        config['welcome_img'] = save_image(welcome_img)
+    try:
+        shutil.rmtree(dist_path)
+    except OSError as e:
+        if e.errno != errno.ENOENT:
+            raise
+    os.makedirs(dist_path, mode=0o775)
 
     file_counter = 1
     singles = []
@@ -105,14 +122,18 @@ def generate_json_files_for_activity(activity, welcome_img=None):
                               start=1):
         config['info_fields'].append(['info_field_' + str(i), field])
 
+    if activity.welcome_img:
+        config['welcome_img'] = activity.welcome_img
+        img_path = os.path.join(app.config['MEDIA_PATH'], 'welcome_image')
+        img_file = os.path.join(img_path, activity.welcome_img)
+        dist_img_file = os.path.join(dist_path, activity.welcome_img)
+        shutil.copyfile(img_file, dist_img_file)
+
     config_filename = os.path.join(dist_path, 'config.json')
     with open(config_filename, 'w') as f:
         simplejson.dump(config, f)
 
-    for node_config in app.config['QUIZ_NODES']:
-        upload_data(node_config,
-                    local=os.path.abspath(dist_path),
-                    remote=activity.code)
+    upload_files_for_activity(activity)
 
 
 def generate_json_for_questions(questions, filename):
@@ -130,6 +151,14 @@ def generate_json_for_questions(questions, filename):
         })
     with open(filename, 'w') as f:
         simplejson.dump({'objects': objects}, f, indent=2, separators=(',', ': '))
+
+
+def upload_files_for_activity(activity):
+    dist_path = os.path.join(DIST_ROOT, activity.code)
+    for node_config in app.config['QUIZ_NODES']:
+        upload_data(node_config,
+                    local=os.path.abspath(dist_path),
+                    remote=activity.code)
 
 
 def upload_data(sftp_config, local, remote):

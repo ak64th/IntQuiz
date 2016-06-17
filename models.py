@@ -67,7 +67,7 @@ class Question(Base):
 ACTIVITY_CODE_LENGTH = 8
 
 
-def _generate_activity_code():
+def generate_activity_code():
     chars = string.ascii_lowercase + string.digits
     return u''.join([random.choice(chars) for _ in range(ACTIVITY_CODE_LENGTH)])
 
@@ -98,7 +98,8 @@ class Activity(Base):
     info_field_1 = TextField(null=True)
     info_field_2 = TextField(null=True)
     info_field_3 = TextField(null=True)
-    code = TextField(default=_generate_activity_code)
+    code = TextField(default=generate_activity_code)
+    welcome_img = TextField(null=True)
     user = ForeignKeyField(User, verbose_name=u'创建者')
 
     @property

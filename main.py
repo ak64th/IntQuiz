@@ -16,6 +16,7 @@ from flask import (flash, g, redirect, request, render_template,
                    send_from_directory, url_for, jsonify, make_response)
 from flask_peewee.utils import get_object_or_404
 from models import *
+from models import generate_activity_code
 from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
 from peewee import create_model_tables, JOIN, fn
 
@@ -205,7 +206,18 @@ def activity_detail(pk):
     if pk:
         activity = get_object_or_404(Activity, (Activity.id == pk))
     else:
-        activity = Activity(type=0, book=QuizBook.get(), start_at=datetime.datetime.now(), show_answer=True)
+        try:
+            book = QuizBook.get()
+        except QuizBook.DoesNotExist:
+            flash(u'请至少建立一个题库', 'danger')
+            return redirect(url_for('activity_list'))
+
+        activity = Activity(type=0,
+                            book=book,
+                            start_at=datetime.datetime.now(),
+                            show_answer=True,
+                            code=generate_activity_code())
+
     if request.method == 'POST':
         name = request.form.get('name')
         welcome = request.form.get('welcome')
@@ -249,12 +261,10 @@ def activity_detail(pk):
             valid = False
 
         if welcome_img:
-            allowed_extensions = ('.jpg', '.jpeg', '.png', '.gif', '.svg', '.bmp', '.webp')
-            basename, ext = os.path.splitext(welcome_img.filename)
-            ext = ext.lower()
-            if not (ext in allowed_extensions):
-                flash(u'不支持的文件扩展名，只支持{}格式'
-                      .format(','.join(allowed_extensions)), 'danger')
+            try:
+                activity.welcome_img = tasks.save_welcome_img(welcome_img, activity)
+            except tasks.UploadNotAllowed as e:
+                flash(e.message, 'danger')
                 valid = False
 
         def datetime_format(date_string):
@@ -295,6 +305,14 @@ def activity_detail(pk):
                 return redirect(url_for('activity_list'))
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
+
+
+@app.route('/activities/publish/<int:pk>/')
+def publish_activity(pk):
+    activity = get_object_or_404(Activity, (Activity.id == pk))
+    tasks.upload_files_for_activity(activity)
+    flash(u'已经将活动{}的题目分发到前台节点'.format(activity.name), 'success')
+    return redirect(url_for('activity_list'))
 
 
 @app.route('/welcome_image/<filename>')
