@@ -186,7 +186,11 @@ def quiz_book_template():
 @auth.login_required
 def question_list(book_id):
     if not book_id:
-        book_id = QuizBook.get().id
+        try:
+            book_id = QuizBook.get().id
+        except QuizBook.DoesNotExist:
+            flash(u'请至少建立一个题库', 'danger')
+            return redirect(url_for('quiz_book_list'))
     books = QuizBook.select()
     if not g.user.admin:
         books = books.where(QuizBook.user == g.user)
