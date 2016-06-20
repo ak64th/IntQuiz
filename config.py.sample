@@ -2,8 +2,12 @@ import os
 
 class Configuration(object):
     DATABASE = {
-        'name': 'intfocus.db',
-        'engine': 'peewee.SqliteDatabase',
+        'name': 'yizhan',
+        'engine': 'peewee.MySQLDatabase',
+        'host': 'rdsmbfnmrmbfnmr.mysql.rds.aliyuncs.com',
+        'port': 3306,
+        'user': 'yizhan',
+        'passwd': '******',
         'threadlocals': True,
     }
     REDIS = 'redis://localhost:6379/0'
