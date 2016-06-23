@@ -39,8 +39,8 @@ def validate_rows(rows):
         return valid
 
     def _check_correct_option(row, i):
-        t = type_mapping[row[1].value]
-        correct_option = row[2].value
+        t = type_mapping[get_value(row[1])]
+        correct_option = get_value(row[2])
         length = len(correct_option)
         if (t != Question.MULTI and length > 1) \
                 or length > 6 \
