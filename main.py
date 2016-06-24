@@ -186,8 +186,9 @@ def quiz_book_template():
 @auth.login_required
 def question_list(book_id):
     if not book_id:
+        condition = None if g.user.admin else (QuizBook.user == g.user)
         try:
-            book_id = QuizBook.get().id
+            book_id = QuizBook.get(condition).id
         except QuizBook.DoesNotExist:
             flash(u'请至少建立一个题库', 'danger')
             return redirect(url_for('quiz_book_list'))
@@ -337,6 +338,8 @@ def activity_stats_list():
              .order_by(Activity.created.desc())
              .group_by(Activity.id, Activity.name)
              .naive())
+    if not g.user.admin:
+        query = query.where(Activity.user == g.user)
     return render_template('stats.html', activities=query)
 
 
