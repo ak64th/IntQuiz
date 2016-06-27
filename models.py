@@ -108,7 +108,7 @@ class Activity(Base):
 
 
 class UserInfo(db.Model):
-    uid = IntegerField()
+    uid = BigIntegerField(null=True)
     info_field_1 = TextField(null=True)
     info_field_2 = TextField(null=True)
     info_field_3 = TextField(null=True)
@@ -117,7 +117,7 @@ class UserInfo(db.Model):
 
 class Run(db.Model):
     run_id = CharField()
-    uid = IntegerField(null=True)
+    uid = BigIntegerField(null=True)
     start = DateTimeField(null=True)
     end = DateTimeField(null=True)
     game = ForeignKeyField(Activity, related_name=u'runs')
