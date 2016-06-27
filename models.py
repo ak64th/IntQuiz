@@ -131,7 +131,7 @@ class FinalScore(db.Model):
 
 class Archive(db.Model):
     run_id = CharField()
-    uid = IntegerField(null=True)
+    uid = BigIntegerField(null=True)
     info_field_1 = TextField(null=True)
     info_field_2 = TextField(null=True)
     info_field_3 = TextField(null=True)
