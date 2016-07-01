@@ -292,7 +292,6 @@ def activity_detail(pk):
             activity.name = name
             activity.welcome = welcome
             activity.type = _type
-            activity.book = book
             activity.chances = chances
             activity.time_limit = time_limit
             activity.single = single
