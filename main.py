@@ -211,14 +211,15 @@ def activity_detail(pk):
     if pk:
         activity = get_object_or_404(Activity, (Activity.id == pk))
     else:
+        condition = None if g.user.admin else (QuizBook.user == g.user)
         try:
-            book = QuizBook.get()
+            default_book = QuizBook.get(condition)
         except QuizBook.DoesNotExist:
             flash(u'请至少建立一个题库', 'danger')
             return redirect(url_for('activity_list'))
 
         activity = Activity(type=0,
-                            book=book,
+                            book=default_book,
                             start_at=datetime.datetime.now(),
                             show_answer=True,
                             code=generate_activity_code())
@@ -249,6 +250,7 @@ def activity_detail(pk):
             flash(u'答题次数不能小于1', 'danger')
             valid = False
         if _type == Activity.ORDINARY:
+            activity.book = get_object_or_404(QuizBook, (QuizBook.id == book))
             if single + multi < 1:
                 flash(u'普通模式下，题目总数不能小于1', 'danger')
                 valid = False
