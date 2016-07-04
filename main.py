@@ -335,7 +335,11 @@ def publish_activity(pk):
 @app.route('/welcome_image/<filename>')
 def welcome_image(filename):
     path = os.path.join(app.config['MEDIA_PATH'], 'welcome_image')
-    return send_from_directory(path, filename)
+    resp = send_from_directory(path, filename)
+    resp.headers.add('Last-Modified', datetime.datetime.now())
+    resp.headers.add('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
+    resp.headers.add('Pragma', 'no-cache')
+    return resp
 
 
 @app.route('/stats/')
