@@ -30,7 +30,10 @@
             <input type="file" id="welcome_img" name="welcome_img">
           </span>
           {% if activity.welcome_img %}
-          <a href="{{ url_for('delete_welcome_image', pk=activity.id) }}" class="btn btn-warning">删除图片</a>
+          <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#welcome_img_delete">
+            删除图片
+          </button>
+          <!--<a href="{{ url_for('delete_welcome_image', pk=activity.id) }}" class="btn btn-warning">删除图片</a>-->
           {% endif %}
           {% if activity.welcome_img %}
           <div class="row">
@@ -166,6 +169,23 @@
     </form>
   </div>
 </section>
+<div class="modal fade" id="welcome_img_delete" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">确认</h4>
+      </div>
+      <div class="modal-body">
+        <p>是否要删除欢迎图片？</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+        <a class="btn btn-primary" href="{{ url_for('delete_welcome_image', pk=activity.id) }}">删除</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 
