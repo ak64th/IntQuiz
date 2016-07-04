@@ -24,6 +24,8 @@ QUESTION_TYPES = {
     Question.MULTI: 'multi'
 }
 
+QUESTION_CHUNK_LENGTH = 20
+
 
 class UploadNotAllowed(Exception):
     pass
@@ -60,7 +62,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def generate_json_files_for_activity(activity, welcome_img=None):
+def generate_json_files_for_activity(activity):
     config = {}
     dist_path = os.path.join(DIST_ROOT, activity.code)
     try:
@@ -74,14 +76,18 @@ def generate_json_files_for_activity(activity, welcome_img=None):
     singles = []
     multiples = []
 
-    for chunk in chunks(activity.book.questions.where(Question.type == Question.SINGLE), 20):
+    questions = activity.book.questions
+
+    for chunk in chunks(questions.where(Question.type == Question.SINGLE),
+                        QUESTION_CHUNK_LENGTH):
         filename = '%d.json' % file_counter
         full_path = os.path.join(dist_path, filename)
         file_counter += 1
         generate_json_for_questions(chunk, full_path)
         singles.append(filename)
 
-    for chunk in chunks(activity.book.questions.where(Question.type == Question.MULTI), 20):
+    for chunk in chunks(questions.where(Question.type == Question.MULTI),
+                        QUESTION_CHUNK_LENGTH):
         filename = '%d.json' % file_counter
         full_path = os.path.join(dist_path, filename)
         file_counter += 1
@@ -127,7 +133,10 @@ def generate_json_files_for_activity(activity, welcome_img=None):
         img_path = os.path.join(app.config['MEDIA_PATH'], 'welcome_image')
         img_file = os.path.join(img_path, activity.welcome_img)
         dist_img_file = os.path.join(dist_path, activity.welcome_img)
-        shutil.copyfile(img_file, dist_img_file)
+        try:
+            shutil.copyfile(img_file, dist_img_file)
+        except OSError as e:
+            app.logger.debug(e.message)
 
     config_filename = os.path.join(dist_path, 'config.json')
     with open(config_filename, 'w') as f:
