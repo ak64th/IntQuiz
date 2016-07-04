@@ -198,6 +198,12 @@ def question_list(book_id):
     return render_template('questions.html', book_id=book_id, books=books)
 
 
+@app.route('/quizbooks/<book_id>/stats')
+def quiz_book_stats(book_id):
+    book = get_object_or_404(QuizBook, QuizBook.id == book_id)
+    return jsonify(title=book.title, single=book.single_count, multi=book.multi_count)
+
+
 @app.route('/activities/')
 @auth.login_required
 def activity_list():

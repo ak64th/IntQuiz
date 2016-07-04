@@ -90,16 +90,16 @@
       </div>
       <div class="form-group">
         <label for="single" class="col-sm-2 control-label">单选题数量</label>
-
         <div class="col-sm-10">
-          <input type="number" min="0" class="form-control" id="single" name="single" placeholder="单选题数量" value="{{ activity.single or 0 }}">
+          <input type="number" min="0" max="{{ activity.book.single_count }}" class="form-control" id="single" name="single" placeholder="单选题数量" value="{{ activity.single or 0 }}">
+          <span class="help-block">当前选择的题库内共有<mark id="single_count">{{ activity.book.single_count }}</mark>道单选题</span>
         </div>
       </div>
       <div class="form-group">
         <label for="multi" class="col-sm-2 control-label">多选题数量</label>
-
         <div class="col-sm-10">
-          <input type="number" min="0" class="form-control" id="multi" name="multi" placeholder="多选题数量" value="{{ activity.multi or 0 }}">
+          <input type="number" min="0" max="{{ activity.book.multi_count }}" class="form-control" id="multi" name="multi" placeholder="多选题数量" value="{{ activity.multi or 0 }}">
+          <span class="help-block">当前选择的题库内共有<mark id="multi_count">{{ activity.book.multi_count }}</mark>道多选题</span>
         </div>
       </div>
       <div class="form-group">
@@ -217,6 +217,22 @@ $(function(){
     },
     locale: "zh-CN"
   });
+  $book = $('#book');
+  updateBookStats = function(){
+    bookId = $book.val();
+    $.getJSON('/quizbooks/' + bookId + '/stats', function(data){
+      $single = $('#single');
+      if($single.val() > data.single) $single.val(data.single);
+      $('#single').prop('max', data.single);
+      $('#single_count').text(data.single);
+      $multi = $('#multi');
+      if($multi.val() > data.multi) $multi.val(data.multi);
+      $('#multi').prop('max', data.multi);
+      $('#multi_count').text(data.multi);
+    });
+  }
+  $book.on('change', updateBookStats);
+  updateBookStats();
 });
 </script>
 {% endblock %}

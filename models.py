@@ -43,6 +43,14 @@ class QuizBook(Base):
     title = TextField()
     user = ForeignKeyField(User, 'books')
 
+    @property
+    def single_count(self):
+        return self.questions.where(Question.type == Question.SINGLE).count()
+
+    @property
+    def multi_count(self):
+        return self.questions.where(Question.type == Question.MULTI).count()
+
 
 class Question(Base):
     SINGLE = 1
@@ -105,14 +113,6 @@ class Activity(Base):
     @property
     def active(self):
         return self.start_at < datetime.datetime.now() < self.end_at
-
-    @property
-    def single_count(self):
-        return self.book.questions.where(Question.type == Question.SINGLE).count()
-
-    @property
-    def multi_count(self):
-        return self.book.questions.where(Question.type == Question.MULTI).count()
 
 
 class UserInfo(db.Model):
