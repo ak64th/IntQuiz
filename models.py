@@ -106,6 +106,14 @@ class Activity(Base):
     def active(self):
         return self.start_at < datetime.datetime.now() < self.end_at
 
+    @property
+    def single_count(self):
+        return self.book.questions.where(Question.type == Question.SINGLE).count()
+
+    @property
+    def multi_count(self):
+        return self.book.questions.where(Question.type == Question.MULTI).count()
+
 
 class UserInfo(db.Model):
     uid = BigIntegerField(null=True)
