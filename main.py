@@ -306,11 +306,22 @@ def activity_detail(pk):
             activity.info_field_3 = info_fields[2]
             activity.user = g.user
             if activity.save():
-                tasks.generate_json_files_for_activity(activity, welcome_img)
+                tasks.generate_json_files_for_activity(activity)
                 flash(u'保存成功', 'success')
                 return redirect(url_for('activity_list'))
     books = QuizBook.select()
     return render_template('activity.html', activity=activity, books=books)
+
+
+@app.route('/activities/<int:pk>/delete_img/')
+@auth.login_required
+def delete_welcome_image(pk):
+    activity = get_object_or_404(Activity, (Activity.id == pk))
+    activity.welcome_img = None
+    if activity.save():
+        tasks.generate_json_files_for_activity(activity)
+        flash(u'删除图片成功', 'success')
+    return redirect(url_for('edit_activity', pk=pk))
 
 
 @app.route('/activities/publish/<int:pk>/')

@@ -29,6 +29,16 @@
             <label for="welcome_img" class="sr-only">选择图片</label>
             <input type="file" id="welcome_img" name="welcome_img">
           </span>
+          {% if activity.welcome_img %}
+          <a href="{{ url_for('delete_welcome_image', pk=activity.id) }}" class="btn btn-warning">删除图片</a>
+          {% endif %}
+          {% if activity.welcome_img %}
+          <div class="row">
+            <span class="thumbnail">
+              <img src="{{ url_for('welcome_image', filename=activity.welcome_img) }}" alt="welcome image">
+            </span>
+          </div>
+          {% endif %}
         </div>
       </div>
       <div class="form-group">
