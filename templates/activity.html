@@ -169,6 +169,8 @@
     </form>
   </div>
 </section>
+
+{% if activity.welcome_img %}
 <div class="modal fade" id="welcome_img_delete" tabindex="-1" role="dialog">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -186,6 +188,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 {% endblock %}
 
 
