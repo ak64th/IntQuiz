@@ -43,91 +43,13 @@ class ArchiveManager(object):
         :return: None
         """
         delete_after_saved = datetime.datetime.now() > activity.end_at
-
-        self.full_archive(activity)
-        self.archive_user_info(activity, delete_after_saved)
-        self.archive_run(activity, delete_after_saved)
-        self.archive_final_score(activity, delete_after_saved)
-
+        self.full_archive(activity, delete_after_saved)
         if delete_after_saved:
             self.redis.delete('game:{}:scores'.format(activity.id))
             self.redis.delete('game:{}:record:ranks'.format(activity.id))
             self.redis.delete('game:{}:record:scores'.format(activity.id))
 
-    def archive_user_info(self, activity, delete_after_saved=False):
-        """保存某次游戏的用户信息
-
-        :param activity: 代表活动的models#Activity实例
-        :param delete_after_saved: 是否要在归档完数据后删除redis内数据
-        :return: (int)插入记录条数
-        """
-        key = 'game:{}:userinfo'.format(activity.id)
-        if not self.redis.exists(key):
-            return 0
-        UserInfo.delete().where(UserInfo.game == activity.id).execute()
-        count = 0
-        for uid, userinfo in iteritems(self.redis.hgetall(key)):
-            _data = json.loads(userinfo)
-            data = {
-                'info_field_1': _data.get('info_field_1'),
-                'info_field_2': _data.get('info_field_2'),
-                'info_field_3': _data.get('info_field_3')
-            }
-            data.update({'uid': uid, 'game': activity.id})
-            if UserInfo.insert(**data).execute():
-                count += 1
-        else:
-            if delete_after_saved:
-                self.redis.delete(key)
-        return count
-
-    def archive_run(self, activity, delete_after_saved=False):
-        """保存某次游戏运行信息
-
-        :param activity: 代表活动的models#Activity实例
-        :param delete_after_saved: 是否要在归档完数据后删除redis内数据
-        :return: (int)插入记录条数
-        """
-        key = 'game:{}:run'.format(activity.id)
-        if not self.redis.exists(key):
-            return 0
-        Run.delete().where(Run.game == activity.id).execute()
-        start_time = self.redis.hgetall('game:{}:start'.format(activity.id))
-        end_time = self.redis.hgetall('game:{}:end'.format(activity.id))
-        count = 0
-        for run_id, uid in iteritems(self.redis.hgetall(key)):
-            Run.insert(run_id=run_id,
-                       uid=uid,
-                       start=start_time.get(run_id),
-                       end=end_time.get(run_id),
-                       game=activity.id).execute()
-            count += 1
-        else:
-            if delete_after_saved:
-                self.redis.delete(key)
-        return count
-
-    def archive_final_score(self, activity, delete_after_saved=False):
-        """保存某次游戏最终分数
-
-        :param activity: 代表活动的models#Activity实例
-        :param delete_after_saved: 是否要在归档完数据后删除redis内数据
-        :return: (int)插入记录条数
-        """
-        key = 'game:{}:final'.format(activity.id)
-        if not self.redis.exists(key):
-            return 0
-        FinalScore.delete().where(FinalScore.game == activity.id).execute()
-        count = 0
-        for run_id, score in iteritems(self.redis.hgetall(key)):
-            FinalScore.insert(run_id=run_id, score=score, game=activity.id).execute()
-            count += 1
-        else:
-            if delete_after_saved:
-                self.redis.delete(key)
-        return count
-
-    def full_archive(self, activity):
+    def full_archive(self, activity, delete_after_saved=False):
         pk = activity.id
         REDIS_KEY_RUN = 'game:{}:run'.format(pk)
         REDIS_KEY_START = 'game:{}:start'.format(pk)
@@ -170,3 +92,9 @@ class ArchiveManager(object):
                 for idx in range(0, len(records), 100):
                     Archive.insert_many(records[idx:idx + 100]).execute()
 
+        if delete_after_saved:
+            self.redis.delete(REDIS_KEY_RUN)
+            self.redis.delete(REDIS_KEY_START)
+            self.redis.delete(REDIS_KEY_END)
+            self.redis.delete(REDIS_KEY_USER)
+            self.redis.delete(REDIS_KEY_FINAL)
