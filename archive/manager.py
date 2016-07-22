@@ -4,31 +4,8 @@ import redis
 import simplejson as json
 from peewee import JOIN
 from six import iteritems
+from app import db
 from models import UserInfo, Run, FinalScore, Archive
-
-
-def archive_activity_rank(activity):
-    Archive.delete().where(Archive.game == activity).execute()
-    source = (Run
-              .select(Run.run_id, UserInfo.uid, UserInfo.info_field_1, UserInfo.info_field_2,
-                      UserInfo.info_field_3, FinalScore.score, Run.start, Run.end, Run.game)
-              .join(UserInfo, JOIN.LEFT_OUTER,
-                    on=((Run.uid == UserInfo.uid) & (Run.game == UserInfo.game)))
-              .join(FinalScore, JOIN.LEFT_OUTER,
-                    on=((Run.run_id == FinalScore.run_id) & (Run.game == UserInfo.game)))
-              .where((Run.game == activity) & (FinalScore.score > 0))
-              .order_by(FinalScore.score.desc()))
-    Archive.insert_from([
-        Archive.run_id,
-        Archive.uid,
-        Archive.info_field_1,
-        Archive.info_field_2,
-        Archive.info_field_3,
-        Archive.score,
-        Archive.start,
-        Archive.end,
-        Archive.game
-    ], source).execute()
 
 
 class ArchiveManager(object):
@@ -67,13 +44,10 @@ class ArchiveManager(object):
         """
         delete_after_saved = datetime.datetime.now() > activity.end_at
 
-        count = 0
-        count += self.archive_user_info(activity, delete_after_saved)
-        count += self.archive_run(activity, delete_after_saved)
-        count += self.archive_final_score(activity, delete_after_saved)
-
-        if count:
-            archive_activity_rank(activity)
+        self.full_archive(activity)
+        self.archive_user_info(activity, delete_after_saved)
+        self.archive_run(activity, delete_after_saved)
+        self.archive_final_score(activity, delete_after_saved)
 
         if delete_after_saved:
             self.redis.delete('game:{}:scores'.format(activity.id))
@@ -152,3 +126,45 @@ class ArchiveManager(object):
             if delete_after_saved:
                 self.redis.delete(key)
         return count
+
+    def full_archive(self, activity):
+        pk = activity.id
+        REDIS_KEY_RUN = 'game:{}:run'.format(pk)
+        REDIS_KEY_START = 'game:{}:start'.format(pk)
+        REDIS_KEY_END = 'game:{}:end'.format(pk)
+        REDIS_KEY_USER = 'game:{}:userinfo'.format(pk)
+        REDIS_KEY_FINAL = 'game:{}:final'.format(pk)
+
+        records = []
+        runs = self.redis.hgetall(REDIS_KEY_RUN)
+        starts = self.redis.hgetall(REDIS_KEY_START)
+        ends = self.redis.hgetall(REDIS_KEY_END)
+        users = self.redis.hgetall(REDIS_KEY_USER)
+        scores = self.redis.hgetall(REDIS_KEY_FINAL)
+        for run_id, uid in iteritems(runs):
+            record = {
+                'run_id': run_id,
+                'uid': uid,
+                'start': starts.get(run_id),
+                'end': ends.get(run_id),
+                'game': pk
+            }
+            user = users.get(uid)
+            if user:
+                userinfo = json.loads(user)
+            else:
+                userinfo = {}
+            record.update({
+                'info_field_1': userinfo.get('info_field_1'),
+                'info_field_2': userinfo.get('info_field_2'),
+                'info_field_3': userinfo.get('info_field_3')
+            })
+            score = scores.get(run_id, 0)
+            record.update({'score': score})
+            records.append(record)
+
+        if records:
+            records = sorted(records, key=lambda r: r.get('score'), reverse=True)
+            Archive.delete().where(Archive.game == activity).execute()
+            with db.database.atomic():
+                Archive.insert_many(records).execute()
