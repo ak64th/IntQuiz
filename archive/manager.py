@@ -32,11 +32,11 @@ class ArchiveManager(object):
         scores - key: 分数, score: 分数
 
         1. 检查活动是否已经结束，如果活动已经结束，设定flag delete_after_saved为True
-        2. 对于活动的userinfo, run, final集合:
+        2. 为该活动的成绩单独归档
+        3. 对于活动的userinfo, run, final集合:
           1) 检查redis存储中是否有本次活动的记录，如果没有，返回。
           2) 读取redis数据转换到sql数据库
           3) 若数据转换成功，并且delete_after_saved为True，删除该集合
-        3. 如果在2中对数据库添加了数据，为该活动的成绩单独归档
         4. 如果delete_after_saved为True，删除活动对应的scores, record:scores和record:ranks集合
 
         :param activity: 代表活动的models#Activity实例
@@ -160,11 +160,13 @@ class ArchiveManager(object):
                 'info_field_3': userinfo.get('info_field_3')
             })
             score = scores.get(run_id, 0)
-            record.update({'score': score})
+            record.update({'score': int(score)})
             records.append(record)
 
         if records:
             records = sorted(records, key=lambda r: r.get('score'), reverse=True)
             Archive.delete().where(Archive.game == activity).execute()
             with db.database.atomic():
-                Archive.insert_many(records).execute()
+                for idx in range(0, len(records), 100):
+                    Archive.insert_many(records[idx:idx + 100]).execute()
+
