@@ -354,11 +354,11 @@ def activity_stats_list():
     query = (Activity
              .select(Activity.id,
                      Activity.name,
-                     fn.Count(Run.id).alias('run_count'),
-                     fn.Count(fn.Distinct(Run.uid)).alias('user_count'))
-             .join(Run, JOIN.LEFT_OUTER)
-             .order_by(Activity.created.desc())
+                     fn.Count(Archive.run_id).alias('run_count'),
+                     fn.Count(fn.DISTINCT(Archive.uid)).alias('user_count'))
+             .join(Archive, JOIN.LEFT_OUTER)
              .group_by(Activity.id, Activity.name)
+             .order_by(Activity.created.desc())
              .naive())
     if not g.user.admin:
         query = query.where(Activity.user == g.user)
