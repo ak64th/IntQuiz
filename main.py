@@ -17,6 +17,7 @@ from flask import (flash, g, redirect, request, render_template,
 from flask_peewee.utils import get_object_or_404
 from models import *
 from models import generate_activity_code
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 from openpyxl.xml.constants import XLSX as XLSX_MIMETYPE
 from peewee import create_model_tables, JOIN, fn
 
@@ -380,6 +381,9 @@ def activity_stats_detail(activity_id):
                            cur_page=page, paginate_by=paginate_by, pages=pages)
 
 
+def remove_illgeal_characters(s):
+    return ILLEGAL_CHARACTERS_RE.sub(r'', s)
+
 @app.route('/stats/<int:activity_id>/workbook')
 @auth.login_required
 def activity_stats_workbook(activity_id):
@@ -390,8 +394,12 @@ def activity_stats_workbook(activity_id):
     ws.title = title
     ws.append([u'名次', u'用户字段1', u'用户字段2', u'用户字段3', u'分数', u'提交成绩时间'])
     for i, archive in enumerate(activity.archives.order_by(Archive.score.desc()), 1):
-        ws.append([i, archive.info_field_1, archive.info_field_2,
-                   archive.info_field_3, archive.score, archive.end])
+        ws.append([i,
+                   remove_illgeal_characters(archive.info_field_1),
+                   remove_illgeal_characters(archive.info_field_2),
+                   remove_illgeal_characters(archive.info_field_3),
+                   archive.score,
+                   archive.end])
     virtual_workbook = openpyxl.writer.excel.save_virtual_workbook(wb)
     response = make_response(virtual_workbook)
     response.mimetype = XLSX_MIMETYPE
