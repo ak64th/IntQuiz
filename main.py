@@ -382,7 +382,9 @@ def activity_stats_detail(activity_id):
 
 
 def remove_illgeal_characters(s):
-    return ILLEGAL_CHARACTERS_RE.sub(r'', s)
+    s = s or ''
+    return ILLEGAL_CHARACTERS_RE.sub(r'', str(s))
+
 
 @app.route('/stats/<int:activity_id>/workbook')
 @auth.login_required
