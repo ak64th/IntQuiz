@@ -382,8 +382,17 @@ def activity_stats_detail(activity_id):
 
 
 def remove_illgeal_characters(s):
-    s = s or ''
-    return ILLEGAL_CHARACTERS_RE.sub(r'', str(s))
+    if not s:
+        return u''
+    # never 502
+    # noinspection PyBroadException
+    try:
+        try:
+            return ILLEGAL_CHARACTERS_RE.sub(r'', s)
+        except UnicodeEncodeError:
+            return ILLEGAL_CHARACTERS_RE.sub(r'', s.decode('utf-8'))
+    except Exception:
+        return u''
 
 
 @app.route('/stats/<int:activity_id>/workbook')
