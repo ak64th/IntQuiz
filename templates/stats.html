@@ -11,6 +11,9 @@
       <thead>
       <tr>
         <th>活动名称</th>
+        <th>开始时间</th>
+        <th>结束时间</th>
+        <th>创建者</th>
         <th>答题人次</th>
         <th>用户数</th>
         <th>答题详情</th>
@@ -21,6 +24,9 @@
       {% for activity in activities %}
       <tr>
         <td>{{ activity.name }}</td>
+        <td>{{ activity.start_at }}</td>
+        <td>{{ activity.end_at }}</td>
+        <td>{{ activity.user.username }}</td>
         <td>{{ activity.run_count }}</td>
         <td>{{ activity.user_count }}</td>
         <td><a href="{{ url_for('activity_stats_detail', activity_id=activity.id) }}">详情</a></td>

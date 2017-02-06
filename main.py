@@ -355,6 +355,9 @@ def activity_stats_list():
     query = (Activity
              .select(Activity.id,
                      Activity.name,
+                     Activity.start_at,
+                     Activity.end_at,
+                     Activity.user,
                      fn.Count(Archive.run_id).alias('run_count'),
                      fn.Count(fn.DISTINCT(Archive.uid)).alias('user_count'))
              .join(Archive, JOIN.LEFT_OUTER)
